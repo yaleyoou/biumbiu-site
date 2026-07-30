@@ -1,0 +1,25 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageIntro from "../components/PageIntro.astro";
+---
+
+<SiteLayout title="关于" description="关于 BiumBiu 和这个个人网站。">
+  <PageIntro eyebrow="04 / About" title="关于" description="BiumBiu 是一个公开工作台。这里不追求完整履历，而是留下真正做过、想清楚和仍在探索的事情。" />
+  <section class="content-section shell">
+    <div class="about-grid">
+      <h2>这个网站</h2>
+      <div>
+        <p>它既是个人名片，也是项目归档和数字花园。</p>
+        <p>内容会保持具体：真实的过程、明确的约束，以及可以被验证的结论。</p>
+      </div>
+    </div>
+    <div class="about-grid">
+      <h2>关注方向</h2>
+      <p>系统、AI、研究工具、Web，以及日常工作中那些值得重新设计的流程。</p>
+    </div>
+    <div class="about-grid">
+      <h2>联系</h2>
+      <p><a class="text-link" href="mailto:hello@biumbiu.com">hello@biumbiu.com <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+</SiteLayout>

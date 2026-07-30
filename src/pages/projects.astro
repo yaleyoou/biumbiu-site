@@ -1,0 +1,55 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import PageIntro from "../components/PageIntro.astro";
+
+const projects = [
+  {
+    id: "network",
+    image: "/images/project-network.webp",
+    alt: "电子电路板的细节",
+    meta: "2026 · Personal infrastructure",
+    title: "Private Network Lab",
+    copy: "从域名、VPS 和 Xray 到 HTTPS 订阅、证书续期与异地备份。重点不是把服务跑起来，而是让它保持可维护、可恢复，并且不把管理面暴露在公网。",
+    tags: ["Linux", "Xray", "Cloudflare", "Security"]
+  },
+  {
+    id: "research",
+    image: "/images/project-research.webp",
+    alt: "桌面上的电脑和研究工作区",
+    meta: "Ongoing · Research systems",
+    title: "Research Workbench",
+    copy: "围绕检索、阅读、实验和写作搭建可重复的工作流。目标不是积累更多工具，而是减少从问题到可靠结论之间的摩擦。",
+    tags: ["AI Agents", "Notes", "Experiments"]
+  },
+  {
+    id: "website",
+    image: "/images/project-web.webp",
+    alt: "显示代码的开发工作区",
+    meta: "2026 · Web craft",
+    title: "BiumBiu.com",
+    copy: "一个轻量、快速并且属于自己的公开空间。Astro 输出纯静态页面，内容随代码版本化，由 Cloudflare Pages 自动部署。",
+    tags: ["Astro", "TypeScript", "Cloudflare Pages"]
+  }
+];
+---
+
+<SiteLayout title="项目" description="BiumBiu 的项目与持续构建中的工作。">
+  <PageIntro eyebrow="01 / Selected work" title="项目" description="这里记录已经交付的结果，也保留那些仍在形成中的系统。每个项目都应该能说明问题、约束与取舍。" />
+  <section class="content-section shell">
+    {projects.map((project) => (
+      <article class="project-feature" id={project.id}>
+        <div class="project-image">
+          <img src={project.image} alt={project.alt} width="1400" height="1000" loading="lazy" />
+        </div>
+        <div class="project-copy">
+          <p class="eyebrow">{project.meta}</p>
+          <h2>{project.title}</h2>
+          <p>{project.copy}</p>
+          <div class="tag-row">
+            {project.tags.map((tag) => <span class="tag">{tag}</span>)}
+          </div>
+        </div>
+      </article>
+    ))}
+  </section>
+</SiteLayout>

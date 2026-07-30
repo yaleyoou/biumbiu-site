@@ -1,0 +1,218 @@
+---
+import { ArrowUpRight, BookOpen, Github, Mail } from "lucide-astro";
+import SiteLayout from "../layouts/SiteLayout.astro";
+
+const focus = [
+  {
+    date: "2026 - NOW",
+    title: "Personal Infrastructure",
+    subtitle: "Systems Engineering",
+    copy: "围绕域名、VPS、网络服务和自动化维护，建立边界清晰、能够恢复的个人基础设施。",
+    tags: ["Linux", "Xray", "Cloudflare", "Security"]
+  },
+  {
+    date: "ONGOING",
+    title: "Research Workbench",
+    subtitle: "AI & Knowledge Systems",
+    copy: "把检索、阅读、实验和写作整理成可重复的工作流，让记录真正参与下一次研究。",
+    tags: ["AI Agents", "Notes", "Experiments"]
+  },
+  {
+    date: "2026",
+    title: "BiumBiu.com",
+    subtitle: "Design & Development",
+    copy: "一个轻量、快速且属于自己的公开空间，用于项目归档、技术笔记和长期表达。",
+    tags: ["Astro", "TypeScript", "Cloudflare Pages"]
+  }
+];
+
+const projects = [
+  {
+    image: "/images/project-network.webp",
+    title: "Private Network Lab",
+    copy: "节点、HTTPS 订阅、证书续期、SSH 安全入口与异地备份组成的完整运维闭环。",
+    tags: ["Infrastructure", "Security"],
+    href: "/projects/#network"
+  },
+  {
+    image: "/images/project-research.webp",
+    title: "Research Workbench",
+    copy: "把零散工具变成可重复的研究系统，减少从问题到可靠结论之间的摩擦。",
+    tags: ["Research", "AI Agents"],
+    href: "/projects/#research"
+  },
+  {
+    image: "/images/project-web.webp",
+    title: "BiumBiu.com",
+    copy: "由 Astro 构建的静态个人网站，内容版本化，并通过 Cloudflare Pages 自动部署。",
+    tags: ["Web", "Astro"],
+    href: "/projects/#website"
+  }
+];
+
+const notes = [
+  { date: "2026", title: "从一台 VPS 到可维护的个人基础设施", href: "/notes/personal-infrastructure/", image: "/images/project-network.webp" },
+  { date: "2026", title: "BBR 解决什么，又不解决什么", href: "/notes/bbr-explained/", image: "/images/hero-circuit.webp" },
+  { date: "DRAFT", title: "个人网站应该先从内容结构开始", href: "/notes/", image: "/images/project-web.webp" }
+];
+---
+
+<SiteLayout portfolio>
+  <div class="portfolio-page" data-spotlight>
+    <div class="portfolio-shell">
+      <aside class="profile-panel">
+        <div class="profile-top reveal">
+          <a class="profile-mark" href="/" aria-label="BiumBiu 首页">B<span>.</span></a>
+          <h1>BiumBiu</h1>
+          <h2>Systems · AI · Web</h2>
+          <p>我构建可靠的系统、清晰的工具，以及经得起长期使用的数字体验。</p>
+
+          <nav class="section-nav" aria-label="首页章节">
+            <a href="#about" data-section-link="about"><span>01</span>关于</a>
+            <a href="#focus" data-section-link="focus"><span>02</span>工作流</a>
+            <a href="#projects" data-section-link="projects"><span>03</span>项目</a>
+            <a href="#writing" data-section-link="writing"><span>04</span>笔记</a>
+          </nav>
+        </div>
+
+        <div class="profile-socials" aria-label="外部链接">
+          <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub"><Github size={22} /></a>
+          <a href="mailto:hello@biumbiu.com" aria-label="Email" title="Email"><Mail size={22} /></a>
+          <a href="/notes/" aria-label="笔记" title="笔记"><BookOpen size={22} /></a>
+        </div>
+      </aside>
+
+      <div class="portfolio-content">
+        <section class="portfolio-section about-section" id="about" data-section="about">
+          <h2 class="mobile-section-title"><span>01.</span> 关于</h2>
+          <p>你好，我是 BiumBiu。我喜欢把模糊的问题拆成可以验证的步骤，再把结果做成稳定、安静并且容易维护的系统。</p>
+          <p>最近的工作集中在个人网络基础设施、AI 辅助研究工作流和这个网站本身。我在意的不只是“能不能运行”，还包括边界是否清楚、失败后能否恢复，以及下一次修改是否仍然轻松。</p>
+          <p>这里是一份公开工作台：记录真正做过的项目、踩过的坑，以及仍在形成中的想法。</p>
+        </section>
+
+        <section class="portfolio-section" id="focus" data-section="focus">
+          <h2 class="mobile-section-title"><span>02.</span> 工作流</h2>
+          <div class="row-group">
+            {focus.map((item) => (
+              <article class="experience-row focus-row">
+                <p class="row-date">{item.date}</p>
+                <div class="row-copy">
+                  <h3>{item.title}</h3>
+                  <p class="row-subtitle">{item.subtitle}</p>
+                  <p>{item.copy}</p>
+                  <div class="pill-list">{item.tags.map((tag) => <span>{tag}</span>)}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <a class="archive-link" href="/now/">查看当前状态 <span aria-hidden="true">→</span></a>
+        </section>
+
+        <section class="portfolio-section" id="projects" data-section="projects">
+          <h2 class="mobile-section-title"><span>03.</span> 项目</h2>
+          <div class="row-group">
+            {projects.map((project) => (
+              <a class="project-compact-row focus-row" href={project.href}>
+                <div class="project-thumb"><img src={project.image} alt="" width="320" height="180" loading="lazy" /></div>
+                <div class="row-copy">
+                  <h3>{project.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
+                  <p>{project.copy}</p>
+                  <div class="pill-list">{project.tags.map((tag) => <span>{tag}</span>)}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+          <a class="archive-link" href="/projects/">查看完整项目档案 <span aria-hidden="true">→</span></a>
+        </section>
+
+        <section class="portfolio-section" id="writing" data-section="writing">
+          <h2 class="mobile-section-title"><span>04.</span> 笔记</h2>
+          <div class="row-group">
+            {notes.map((note) => (
+              <a class="writing-row focus-row" href={note.href}>
+                <div class="writing-thumb"><img src={note.image} alt="" width="320" height="180" loading="lazy" /></div>
+                <div class="row-copy">
+                  <p class="row-date">{note.date}</p>
+                  <h3>{note.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
+                </div>
+              </a>
+            ))}
+          </div>
+          <a class="archive-link" href="/notes/">阅读全部笔记 <span aria-hidden="true">→</span></a>
+        </section>
+
+        <section class="portfolio-section contact-section" id="contact">
+          <p class="contact-kicker">05 / SAY HELLO</p>
+          <h2>保持联系。</h2>
+          <p>如果你也在构建工具、系统或值得长期维护的东西，可以写信给我。</p>
+          <a class="outline-button" href="mailto:hello@biumbiu.com">发送邮件</a>
+        </section>
+
+        <footer class="portfolio-footer">
+          <p>以 Astro 构建，部署于 Cloudflare Pages。</p>
+          <p>© 2026 BiumBiu</p>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const spotlightRoot = document.querySelector<HTMLElement>("[data-spotlight]");
+    const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-section-link]")];
+    const sections = [...document.querySelectorAll<HTMLElement>("[data-section]")];
+    const focusRows = [...document.querySelectorAll<HTMLElement>(".focus-row")];
+    const finePointer = window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (spotlightRoot && finePointer.matches && !reducedMotion.matches) {
+      let targetX = window.innerWidth * 0.68;
+      let targetY = window.innerHeight * 0.28;
+      let currentX = targetX;
+      let currentY = targetY;
+      let animationFrame = 0;
+
+      const renderSpotlight = () => {
+        currentX += (targetX - currentX) * 0.14;
+        currentY += (targetY - currentY) * 0.14;
+        spotlightRoot.style.setProperty("--spot-x", `${currentX}px`);
+        spotlightRoot.style.setProperty("--spot-y", `${currentY}px`);
+
+        if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
+          animationFrame = window.requestAnimationFrame(renderSpotlight);
+        } else {
+          animationFrame = 0;
+        }
+      };
+
+      window.addEventListener("pointermove", (event) => {
+        targetX = event.clientX;
+        targetY = event.clientY;
+        spotlightRoot.classList.add("spotlight-active");
+        if (!animationFrame) animationFrame = window.requestAnimationFrame(renderSpotlight);
+      }, { passive: true });
+
+      window.addEventListener("mouseout", (event) => {
+        if (!event.relatedTarget) spotlightRoot.classList.remove("spotlight-active");
+      });
+      window.addEventListener("blur", () => spotlightRoot.classList.remove("spotlight-active"));
+
+      focusRows.forEach((row) => {
+        row.addEventListener("pointermove", (event) => {
+          const bounds = row.getBoundingClientRect();
+          row.style.setProperty("--row-x", `${event.clientX - bounds.left}px`);
+          row.style.setProperty("--row-y", `${event.clientY - bounds.top}px`);
+        }, { passive: true });
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!visible) return;
+      links.forEach((link) => link.classList.toggle("active", link.dataset.sectionLink === visible.target.id));
+    }, { rootMargin: "-20% 0px -60%", threshold: [0, 0.25, 0.5] });
+
+    sections.forEach((section) => observer.observe(section));
+  </script>
+</SiteLayout>

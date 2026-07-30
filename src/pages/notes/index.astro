@@ -1,0 +1,47 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import PageIntro from "../../components/PageIntro.astro";
+
+const notes = [
+  {
+    date: "2026.07.30",
+    title: "从一台 VPS 到可维护的个人基础设施",
+    summary: "把节点、订阅、证书、安全入口与备份组合成一个完整的运维闭环。",
+    href: "/notes/personal-infrastructure/"
+  },
+  {
+    date: "2026.07.30",
+    title: "BBR 解决什么，又不解决什么",
+    summary: "拥塞控制能改善高延迟线路的吞吐，但不能改变距离和运营商路由。",
+    href: "/notes/bbr-explained/"
+  },
+  {
+    date: "Draft",
+    title: "个人网站应该先从内容结构开始",
+    summary: "框架和动画都不是第一问题，先决定这个网站未来要容纳什么。",
+    href: "/notes/"
+  },
+  {
+    date: "Draft",
+    title: "把实验记录变成可以复用的知识",
+    summary: "从一次性日志到可以检索、连接并推动下一轮工作的研究记忆。",
+    href: "/notes/"
+  }
+];
+---
+
+<SiteLayout title="笔记" description="关于系统、AI 和构建过程的现场笔记。">
+  <PageIntro eyebrow="02 / Field notes" title="笔记" description="写下经过验证的事实、失败的路径和最终做出的取舍。保持具体，也允许结论随着经验更新。" />
+  <section class="content-section shell">
+    <div class="notes-grid">
+      {notes.map((note) => (
+        <article class="note-card">
+          <p class="eyebrow">{note.date}</p>
+          <h2>{note.title}</h2>
+          <p>{note.summary}</p>
+          <a class="text-link" href={note.href}>阅读笔记 <span aria-hidden="true">→</span></a>
+        </article>
+      ))}
+    </div>
+  </section>
+</SiteLayout>

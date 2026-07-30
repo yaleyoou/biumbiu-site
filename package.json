@@ -1,0 +1,19 @@
+{
+  "name": "biumbiu-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@fontsource-variable/manrope": "^5.2.6",
+    "@fontsource-variable/newsreader": "^5.2.5",
+    "astro": "^5.13.5",
+    "lucide-astro": "^0.468.0",
+    "typescript": "^5.7.2"
+  }
+}

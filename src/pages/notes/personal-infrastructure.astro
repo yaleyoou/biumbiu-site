@@ -1,0 +1,26 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+---
+
+<SiteLayout title="从一台 VPS 到可维护的个人基础设施" description="节点、订阅、安全入口、证书与备份组成的完整运维闭环。">
+  <article class="prose">
+    <header class="prose-header reveal">
+      <p class="eyebrow">Field note · 2026.07.30</p>
+      <h1>从一台 VPS 到可维护的个人基础设施</h1>
+      <p>真正完成的标志不是客户端第一次显示“已连接”，而是系统具备明确边界、自动续期和可恢复备份。</p>
+    </header>
+
+    <p>一台 VPS、一个域名和一套面板很容易变成长期无人敢动的配置。解决办法不是继续叠加组件，而是把每个入口的职责分开。</p>
+
+    <h2>管理面必须有边界</h2>
+    <p>管理面板只监听 <code>127.0.0.1</code>，通过 SSH 隧道访问。浏览器里看到的是 HTTP，但公网链路由 SSH 加密，面板端口也没有暴露。</p>
+
+    <blockquote>安全路径应该容易复述：谁能访问、从哪里进入、哪一层负责加密。</blockquote>
+
+    <h2>订阅是独立服务</h2>
+    <p>客户端节点与订阅地址不是一回事。节点使用 REALITY 建立数据通道，订阅则通过 HTTPS 返回配置。对于 Clash，响应必须是真正的 YAML，而不是通用 Base64 内容或信息页面。</p>
+
+    <h2>完成意味着可以恢复</h2>
+    <p>证书通过定时器续期，并在续期后重启服务加载新文件。数据库使用 SQLite 在线备份，再复制到本地设备。这样，即使 VPS 丢失，核心配置仍然能够重建。</p>
+  </article>
+</SiteLayout>
