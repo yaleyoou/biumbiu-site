@@ -37,8 +37,6 @@ import SiteLayout from "../../layouts/SiteLayout.astro";
 
     <p>这一步留下的经验是：排查 DNS 时要区分“系统实际使用的代理 DNS”和“公网权威解析结果”。看到 <code>198.18.0.0/15</code> 一类地址时，应先想到 Fake-IP，而不是立刻修改 Cloudflare 记录。</p>
 
-    <h2>服务器命令必须在服务器执行</h2>
-    <p>部署早期我在 Mac 终端直接运行 <code>ufw</code>，得到 <code>zsh: command not found: ufw</code>。问题不是 Ubuntu 缺少组件，而是命令仍在本机执行。正确顺序是先通过 <code>ssh root@VPS_PUBLIC_IP</code> 进入 VPS，再处理系统更新、防火墙和服务。</p>
 
     <p>公网至少需要放行 SSH 管理端口和节点使用的 <code>443/tcp</code>。修改防火墙前必须先保证当前 SSH 会话不会被锁在外面；RackNerd 等服务商的控制台也应作为最后的恢复入口保留。</p>
 
