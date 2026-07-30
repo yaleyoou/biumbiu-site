@@ -620,7 +620,26 @@ button, input, textarea { font: inherit; }
 }
 
 @media (min-width: 1024px) {
-  .mobile-section-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mobile-section-title {
+    position: static;
+    width: auto;
+    height: auto;
+    margin-bottom: 38px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    color: var(--muted);
+  }
+  .mobile-section-title::before,
+  .mobile-section-title::after {
+    content: "";
+    height: 1px;
+    flex: 1 1 auto;
+    background: var(--line);
+  }
 }
 
 @media (max-width: 1023px) {

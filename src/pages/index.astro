@@ -5,10 +5,10 @@ import SiteLayout from "../layouts/SiteLayout.astro";
 const focus = [
   {
     date: "2026 - NOW",
-    title: "Personal Infrastructure",
-    subtitle: "Systems Engineering",
-    copy: "围绕域名、VPS、网络服务和自动化维护，建立边界清晰、能够恢复的个人基础设施。",
-    tags: ["Linux", "Xray", "Cloudflare", "Security"]
+    title: "AI Infrastructure & LLM Inference Learning & Engineering Practice",
+    subtitle: "Studying",
+    copy: "持续学习 AI Infra、推理引擎与大模型推理，记录对系统架构、执行机制和性能优化的理解，并通过论文阅读、实验与工程实践，逐步沉淀自己的知识体系。",
+    tags: ["LLM", "AI Infra", "Inference Engine", "Systems"]
   },
   {
     date: "ONGOING",
@@ -83,7 +83,7 @@ const notes = [
 
           <nav class="section-nav" aria-label="首页章节">
             <a href="#about" data-section-link="about">关于</a>
-            <a href="#focus" data-section-link="focus">工作流</a>
+            <a href="#focus" data-section-link="focus">近况</a>
             <a href="#projects" data-section-link="projects">项目</a>
             <a href="#writing" data-section-link="writing">笔记</a>
           </nav>
@@ -98,7 +98,7 @@ const notes = [
 
       <div class="portfolio-content">
         <section class="portfolio-section about-section" id="about" data-section="about">
-          <h2 class="mobile-section-title">关于</h2>
+          <!--<h2 class="mobile-section-title">关于</h2>-->
           <p>Hi there! I'm biumbiu, a master's student in Computer Technology at the University of Science and Technology of China (USTC). I'm curious about how intelligent systems work, and I enjoy turning new ideas into things I can build, test, and understand.</p>
           <p>My current interests lie in large language model inference, AI infrastructure, and agents. I'm particularly interested in making AI systems faster, more efficient, and more capable of solving real-world problems. Whether I'm reading papers, experimenting with new tools, or working on a project, I enjoy the process of starting with an uncertain question and gradually making it clearer.</p>
           <p>Outside of research, I play basketball, practice guitar, and take photos of moments I want to remember. When there's nothing in particular to do, I like going on long walks with friends and seeing where the conversation takes us. I'm always curious about unfamiliar ideas, technologies, and places.</p>
@@ -106,7 +106,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="focus" data-section="focus">
-          <h2 class="mobile-section-title">工作流</h2>
+         <!-- <h2 class="mobile-section-title">近况</h2>  -->
           <div class="row-group">
             {focus.map((item) => (
               <article class="experience-row focus-row">
@@ -124,7 +124,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="projects" data-section="projects">
-          <h2 class="mobile-section-title">项目</h2>
+          <!-- <h2 class="mobile-section-title">项目</h2> -->
           <div class="row-group">
             {projects.map((project) => (
               <a class="project-compact-row focus-row" href={project.href}>
@@ -141,7 +141,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="writing" data-section="writing">
-          <h2 class="mobile-section-title">笔记</h2>
+          <!-- <h2 class="mobile-section-title">笔记</h2> -->
           <div class="row-group">
             {notes.map((note) => (
               <a class="writing-row focus-row" href={note.href}>
@@ -158,13 +158,13 @@ const notes = [
 
         <section class="portfolio-section contact-section" id="contact">
           <p class="contact-kicker">SAY HELLO</p>
-          <h2>保持联系。</h2>
-          <p>如果你也在构建工具、系统或值得长期维护的东西，可以写信给我。</p>
+          <h2>Keep Contact</h2>
+          <p>聊聊正在发生的事。关于技术、创造，或最近让你着迷的问题，欢迎来信。</p>
           <a class="outline-button" href="mailto:yaleyoou@gmail.com">发送邮件</a>
         </section>
 
         <footer class="portfolio-footer">
-          <p>以 Astro 构建，部署于 Cloudflare Pages。</p>
+          <!-- <p>以 Astro 构建，部署于 Cloudflare Pages。</p> -->
           <p>© 2026 BiumBiu</p>
         </footer>
       </div>
