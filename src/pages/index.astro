@@ -21,7 +21,7 @@ const focus = [
     date: "2026",
     title: "BiumBiu.com",
     subtitle: "Design & Development",
-    copy: "一个轻量、快速且属于自己的公开空间，用于项目归档、技术笔记和长期表达。",
+    copy: "一个轻量、快速且属于自己的个人站点，用于项目归档、技术笔记和个人成长记录。",
     tags: ["Astro", "TypeScript", "Cloudflare Pages"]
   }
 ];
@@ -30,22 +30,25 @@ const projects = [
   {
     image: "/images/project-research.webp",
     contain: false,
+    dark: false,
     title: "Kimi K3 Inference Stack",
     copy: "在 NVIDIA B300 平台完成 Kimi K3 部署与推理链路调优，并通过 Token 中转服务提供稳定、统一的外部调用入口。",
     tags: ["Kimi K3", "B300", "Inference"],
     href: "/projects/kimi-k3/"
   },
   {
-    image: "/images/project-research.webp",
+    image: "/images/yxy-agent-blog-assets/research-agent-workflow.png",
     contain: false,
+    dark: false,
     title: "Auto-Sci-Find Multi-Agent",
     copy: "把文献调研、代码实验、质量检查和反思迭代连接成可追踪、可回退的自动化科研闭环。",
     tags: ["AI4S", "Multi-Agent", "SurveyAgent"],
     href: "/projects/auto-sci-find-multiagent/"
   },
   {
-    image: "/images/ustc-kernel-competition-poster.png",
+    image: "/images/vllm-ascend-logo-dark.png",
     contain: true,
+    dark: true,
     title: "Ascend Kernel-to-Serving Pipeline",
     copy: "为算子开发大赛建立从 Triton-Ascend baseline、注意力算子到 vLLM-Ascend 集成与 Serving 评测的完整工程链路。",
     tags: ["Ascend NPU", "Triton", "vLLM", "Evaluation"],
@@ -54,6 +57,7 @@ const projects = [
   {
     image: "/images/project-web.webp",
     contain: false,
+    dark: false,
     title: "BiumBiu.com",
     copy: "由 Astro 构建的静态个人网站，内容版本化，并通过 Cloudflare Pages 自动部署。",
     tags: ["Web", "Astro"],
@@ -62,9 +66,8 @@ const projects = [
 ];
 
 const notes = [
-  { date: "2026", title: "从本地预览到正式域名", href: "/notes/website-launch/", image: "/images/project-web.webp" },
-  { date: "2026", title: "从零搭建一个美国节点", href: "/notes/personal-infrastructure/", image: "/images/project-network.webp" },
-  { date: "2026", title: "BBR 解决什么，又不解决什么", href: "/notes/bbr-explained/", image: "/images/hero-circuit.webp" }
+  { date: "2026", title: "从零搭建一个个人网站", href: "/notes/website-launch/", image: "/images/project-web.webp" },
+  { date: "2026", title: "从零搭建一个美国节点", href: "/notes/personal-infrastructure/", image: "/images/project-network.webp" }
 ];
 ---
 
@@ -75,8 +78,8 @@ const notes = [
         <div class="profile-top reveal">
           <a class="profile-mark" href="/" aria-label="BiumBiu 首页">B<span>.</span></a>
           <h1>BiumBiu</h1>
-          <h2>Systems · AI · Web</h2>
-          <p>我构建可靠的系统、清晰的工具，以及经得起长期使用的数字体验。</p>
+          <h2>AI Infra · Agent · LLM</h2>
+          <p>保持好奇，允许无解。</p>
 
           <nav class="section-nav" aria-label="首页章节">
             <a href="#about" data-section-link="about">关于</a>
@@ -96,9 +99,10 @@ const notes = [
       <div class="portfolio-content">
         <section class="portfolio-section about-section" id="about" data-section="about">
           <h2 class="mobile-section-title">关于</h2>
-          <p>你好，我是 BiumBiu。我喜欢把模糊的问题拆成可以验证的步骤，再把结果做成稳定、安静并且容易维护的系统。</p>
-          <p>最近的工作集中在个人网络基础设施、大模型推理部署与优化，以及这个网站本身。我在意的不只是“能不能运行”，还包括边界是否清楚、失败后能否恢复，以及下一次修改是否仍然轻松。</p>
-          <p>这里是一份公开工作台：记录真正做过的项目、踩过的坑，以及仍在形成中的想法。</p>
+          <p>Hi there! I'm biumbiu, a master's student in Computer Technology at the University of Science and Technology of China (USTC). I'm curious about how intelligent systems work, and I enjoy turning new ideas into things I can build, test, and understand.</p>
+          <p>My current interests lie in large language model inference, AI infrastructure, and agents. I'm particularly interested in making AI systems faster, more efficient, and more capable of solving real-world problems. Whether I'm reading papers, experimenting with new tools, or working on a project, I enjoy the process of starting with an uncertain question and gradually making it clearer.</p>
+          <p>Outside of research, I play basketball, practice guitar, and take photos of moments I want to remember. When there's nothing in particular to do, I like going on long walks with friends and seeing where the conversation takes us. I'm always curious about unfamiliar ideas, technologies, and places.</p>
+          <p>This blog is where I document what I'm learning, building, and thinking about along the way. The notes here may not always contain definitive answers, but I hope they capture honest questions, useful discoveries, and a little bit of life beyond the screen.</p>
         </section>
 
         <section class="portfolio-section" id="focus" data-section="focus">
@@ -124,7 +128,7 @@ const notes = [
           <div class="row-group">
             {projects.map((project) => (
               <a class="project-compact-row focus-row" href={project.href}>
-                <div class:list={["project-thumb", { "project-thumb-contain": project.contain }]}><img src={project.image} alt="" width="320" height="180" loading="lazy" /></div>
+                <div class:list={["project-thumb", { "project-thumb-contain": project.contain, "project-thumb-dark": project.dark }]}><img src={project.image} alt="" width="320" height="180" loading="lazy" /></div>
                 <div class="row-copy">
                   <h3>{project.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
                   <p>{project.copy}</p>

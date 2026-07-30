@@ -176,32 +176,35 @@ button, input, textarea { font: inherit; }
   margin-top: 62px;
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: 0;
 }
 .section-nav a {
   width: max-content;
+  padding: 10px 0;
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 16px;
   color: var(--muted);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 720;
   text-transform: uppercase;
-  transition: color 160ms ease;
+  transition: color 180ms ease;
 }
 .section-nav a::before {
   content: "";
-  width: 6px;
-  height: 6px;
-  border: 1px solid currentColor;
-  transform: rotate(45deg);
-  transition: color 160ms ease, background 160ms ease;
+  width: 32px;
+  height: 1px;
+  flex: 0 0 auto;
+  background: var(--muted);
+  transition: width 180ms ease, background 180ms ease;
 }
 .section-nav a:hover,
+.section-nav a:focus-visible,
 .section-nav a.active { color: var(--text); }
 .section-nav a:hover::before,
-.section-nav a.active::before { color: var(--accent); background: var(--accent); }
+.section-nav a:focus-visible::before,
+.section-nav a.active::before { width: 64px; background: var(--accent); }
 .profile-socials { display: flex; gap: 8px; }
 .profile-socials a {
   width: 38px;
@@ -358,6 +361,8 @@ button, input, textarea { font: inherit; }
 .project-thumb-contain { background: #f7f9fc; }
 .project-thumb-contain img { object-fit: contain; filter: none; }
 .focus-row:hover .project-thumb-contain img { filter: none; transform: none; }
+.project-thumb-dark { background: var(--bg-deep); }
+.project-thumb-dark img { padding: 10px; }
 .focus-row:hover .project-thumb,
 .focus-row:hover .writing-thumb { border-color: rgba(185, 255, 67, 0.45); }
 .focus-row:hover .project-thumb img,
@@ -441,6 +446,8 @@ button, input, textarea { font: inherit; }
 .project-image-contain { background: #f7f9fc; }
 .project-image-contain img { object-fit: contain; filter: none; }
 .project-feature:hover .project-image-contain img { transform: none; filter: none; }
+.project-image-dark { background: var(--bg-deep); }
+.project-image-dark img { padding: 7%; }
 .project-feature:hover img { transform: scale(1.025); filter: saturate(1); }
 .project-copy { align-self: end; }
 .project-copy h2 { margin: 10px 0 16px; color: var(--text); font-size: clamp(38px, 5vw, 58px); line-height: 1; }
