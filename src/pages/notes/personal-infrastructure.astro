@@ -2,25 +2,108 @@
 import SiteLayout from "../../layouts/SiteLayout.astro";
 ---
 
-<SiteLayout title="从一台 VPS 到可维护的个人基础设施" description="节点、订阅、安全入口、证书与备份组成的完整运维闭环。">
+<SiteLayout
+  title="从零搭建一个美国节点：一次 3x-ui 部署记录"
+  description="复盘从 Cloudflare DNS、美国 VPS、3x-ui 到 VLESS REALITY 节点、订阅和性能调优的完整过程。"
+>
   <article class="prose">
     <header class="prose-header reveal">
       <p class="eyebrow">Field note · 2026.07.30</p>
-      <h1>从一台 VPS 到可维护的个人基础设施</h1>
-      <p>真正完成的标志不是客户端第一次显示“已连接”，而是系统具备明确边界、自动续期和可恢复备份。</p>
+      <h1>从零搭建一个美国节点</h1>
+      <p>一次关于 Cloudflare DNS、美国 VPS、3x-ui、Xray 和 VLESS REALITY 的完整部署记录。</p>
     </header>
 
-    <p>一台 VPS、一个域名和一套面板很容易变成长期无人敢动的配置。解决办法不是继续叠加组件，而是把每个入口的职责分开。</p>
+    <p>这次的目标并不只是让客户端第一次显示“已连接”，而是搭出一个职责清楚、能够排错、以后也敢继续维护的个人节点。日常交流里经常把它叫作 VPN，但更准确地说，它是由 Xray 提供的代理节点。本文只记录本人设备的合法远程访问与网络技术学习，请遵守所在地法律和服务商条款。</p>
 
-    <h2>管理面必须有边界</h2>
-    <p>管理面板只监听 <code>127.0.0.1</code>，通过 SSH 隧道访问。浏览器里看到的是 HTTP，但公网链路由 SSH 加密，面板端口也没有暴露。</p>
+    <blockquote>客户端 → 节点域名 → 美国 VPS → Xray Core → 美国出口 IP</blockquote>
 
-    <blockquote>安全路径应该容易复述：谁能访问、从哪里进入、哪一层负责加密。</blockquote>
+    <p>本文公开的是架构、配置原则和排错方法。真实 VPS IP、面板路径、用户 UUID、订阅 ID、REALITY 私钥和 Short ID 均不展示；示例统一使用 <code>sub.example.com</code> 和占位符。</p>
 
-    <h2>订阅是独立服务</h2>
-    <p>客户端节点与订阅地址不是一回事。节点使用 REALITY 建立数据通道，订阅则通过 HTTPS 返回配置。对于 Clash，响应必须是真正的 YAML，而不是通用 Base64 内容或信息页面。</p>
+    <h2>先把每个入口的职责分开</h2>
+    <p>最终我把根域名和 <code>www</code> 留给个人网站，节点只使用一个独立子域名。客户端由 Clash Verge 或 Shadowrocket 负责，3x-ui 只负责管理配置，真正处理连接的是 Xray Core。</p>
 
-    <h2>完成意味着可以恢复</h2>
-    <p>证书通过定时器续期，并在续期后重启服务加载新文件。数据库使用 SQLite 在线备份，再复制到本地设备。这样，即使 VPS 丢失，核心配置仍然能够重建。</p>
+    <ul>
+      <li>个人网站：根域名与 <code>www</code>，部署在 Cloudflare Pages。</li>
+      <li>节点域名：<code>sub.example.com</code>，直接解析到 VPS，保持 DNS only。</li>
+      <li>管理面板：只监听 <code>127.0.0.1</code>，通过 SSH 隧道访问。</li>
+      <li>数据入口：Xray 在公网 <code>443/tcp</code> 接收 VLESS REALITY 连接。</li>
+      <li>订阅服务：作为独立的 HTTPS 服务处理，不和节点数据通道混为一谈。</li>
+    </ul>
+
+    <h2>DNS 的第一个误判</h2>
+    <p>我先在 Cloudflare 创建了节点子域名的 A 记录，让它指向美国 VPS。这里必须使用灰色云朵，也就是 <code>DNS only</code>。Cloudflare 的普通橙云代理面向 HTTP/HTTPS，不能直接代理这条原生 REALITY TCP 连接。</p>
+
+    <p>第一次执行 DNS 查询时，结果却是 <code>198.18.2.16</code>。这并不是域名绑定错误，而是 Clash 的 Fake-IP 机制返回了保留地址。关闭 Clash 后，再用公共解析器查询，域名才显示真实 VPS IP。</p>
+
+    <p>这一步留下的经验是：排查 DNS 时要区分“系统实际使用的代理 DNS”和“公网权威解析结果”。看到 <code>198.18.0.0/15</code> 一类地址时，应先想到 Fake-IP，而不是立刻修改 Cloudflare 记录。</p>
+
+    <h2>服务器命令必须在服务器执行</h2>
+    <p>部署早期我在 Mac 终端直接运行 <code>ufw</code>，得到 <code>zsh: command not found: ufw</code>。问题不是 Ubuntu 缺少组件，而是命令仍在本机执行。正确顺序是先通过 <code>ssh root@VPS_PUBLIC_IP</code> 进入 VPS，再处理系统更新、防火墙和服务。</p>
+
+    <p>公网至少需要放行 SSH 管理端口和节点使用的 <code>443/tcp</code>。修改防火墙前必须先保证当前 SSH 会话不会被锁在外面；RackNerd 等服务商的控制台也应作为最后的恢复入口保留。</p>
+
+    <h2>3x-ui 面板不直接暴露公网</h2>
+    <p>安装 3x-ui 后，我修改了面板端口、用户名、密码和 Base URI。安装程序询问 SSL 时选择跳过，但随后把面板绑定到 <code>127.0.0.1</code>。这意味着面板本身虽然提供 HTTP，公网却无法直接访问它。</p>
+
+    <p>Mac 通过 SSH 本地端口转发进入面板，形式类似 <code>ssh -L LOCAL_PORT:127.0.0.1:PANEL_PORT root@VPS_PUBLIC_IP</code>。浏览器访问的是本机 <code>127.0.0.1</code>，真正跨越公网的部分由 SSH 加密。</p>
+
+    <p>安装完成后，先用 <code>x-ui status</code> 和 <code>systemctl status x-ui --no-pager</code> 确认 3x-ui 与 Xray 都处于 running 状态。面板警告“明文 HTTP”时，也要结合监听地址判断：公网 HTTP 确实危险，回环地址加 SSH 隧道则是另一种边界。</p>
+
+    <h2>建立 VLESS REALITY 入站</h2>
+    <p>数据入口最终使用 VLESS、TCP/RAW、REALITY 与 Vision。关键配置可以概括为：</p>
+
+    <ul>
+      <li>协议为 VLESS，解密和加密均为 <code>none</code>。</li>
+      <li>监听地址留空，使 Xray 监听公网；端口使用 <code>443</code>。</li>
+      <li>传输使用 TCP/RAW，Header 为 <code>none</code>。</li>
+      <li>安全选择 REALITY，客户端指纹使用 <code>chrome</code>。</li>
+      <li>目标地址与 SNI 保持一致，例如一个可稳定访问的真实 TLS 站点。</li>
+      <li>生成 X25519 密钥对；私钥只留在服务器，客户端只使用公钥。</li>
+      <li>客户端 flow 使用 <code>xtls-rprx-vision</code>，并填写匹配的 Short ID。</li>
+    </ul>
+
+    <p>第一次导出分享链接为空，是因为入站的 <code>clients</code> 数组还是空的。入站协议配置完成不等于已经有可用用户；还必须新增客户端、生成 UUID，并保存入站。此后 3x-ui 才能生成完整的 VLESS 链接。</p>
+
+    <blockquote>REALITY 私钥、UUID、订阅 ID 和面板路径都属于凭据。公开截图或求助后，应立即轮换已经暴露的值。</blockquote>
+
+    <h2>端口可达不代表协议正确</h2>
+    <p>Mac 上使用 <code>nc -vz -G 5 sub.example.com 443</code> 可以确认 TCP 三次握手成功。这个结果证明 DNS、路由和端口基本可达，但不能证明 REALITY 的公钥、SNI、Short ID、UUID 与 flow 全部匹配。</p>
+
+    <p>客户端一度能够测出延迟，连接后却无法打开网页。这说明“延迟测试成功”也不是最终验收。实际排查顺序应当是：</p>
+
+    <ol>
+      <li>确认公网 DNS 指向正确 VPS，并排除 Clash Fake-IP 干扰。</li>
+      <li>确认服务器确实监听 <code>443/tcp</code>，外部端口可以建立连接。</li>
+      <li>逐项核对 UUID、公钥、SNI、Short ID、Vision flow 和客户端指纹。</li>
+      <li>检查 Xray 与 3x-ui 日志，观察连接是否进入以及在哪一步失败。</li>
+      <li>最后用真实网页、下载和 DNS 查询验证，而不只看客户端延迟数字。</li>
+    </ol>
+
+    <h2>节点链接和订阅不是一回事</h2>
+    <p>单条 VLESS 链接可以直接导入 Shadowrocket；Clash Verge 则需要支持 VLESS REALITY 的内核和正确的 Clash 配置。Shadowrocket 显示“本地节点”，通常只表示配置由用户在本机导入，并不代表服务器位于本机。面板最初显示的订阅地址是 <code>http://127.0.0.1:SUB_PORT/sub/TOKEN</code>，这个地址只对服务器本机有效，外部客户端当然无法访问。</p>
+
+    <p>要提供订阅，就要单独准备公网 HTTPS 地址、证书和正确的响应格式。Clash 使用的地址还应返回真正的 YAML；在当前面板中，使用带 <code>?view=raw</code> 的 Clash 地址可以避免导入通用页面或 Base64 内容。完成测试后，我删除了失败的测试客户端，并重新生成曾经暴露过的订阅 ID。</p>
+
+    <h2>SSH 免密是管理入口的一部分</h2>
+    <p>Mac 已经有 SSH 公钥后，可以把公钥内容加入 VPS 的 <code>authorized_keys</code>。操作完成后应保留原会话，再开一个新终端验证密钥登录；只有确认新入口可靠，才考虑关闭密码登录。这样即使面板不可用，服务器仍然有一条独立、可审计的管理路径。</p>
+
+    <h2>BBR 改善吞吐，但不改变距离</h2>
+    <p>服务器最初使用 <code>cubic</code> 和 <code>pfifo_fast</code>。启用 BBR 后，检查结果变为 <code>net.ipv4.tcp_congestion_control = bbr</code> 与 <code>net.core.default_qdisc = fq</code>。它可以改善高延迟、偶有丢包线路上的吞吐和满载稳定性，但不会把中国到美国的物理往返时间变短。</p>
+
+    <p>实际测试约为 5.6–7.8 MB/s，换算后约 45–62 Mbps，已经超过多数 4K 视频所需的 15–25 Mbps。手机延迟明显高于电脑，更可能来自蜂窝网络、运营商路由、Wi-Fi 环境和测试方法，而不是 VPS 上某个参数可以直接消除的问题。</p>
+
+    <h2>真正完成的是运维闭环</h2>
+    <p>节点能用只是起点。最终我把以下事项作为完成标准：</p>
+
+    <ul>
+      <li>面板仅监听回环地址，通过 SSH 密钥和本地隧道管理。</li>
+      <li>公网只开放必要端口，节点域名保持 DNS only。</li>
+      <li>定期更新 3x-ui 与 Xray，并在变更前备份配置数据库。</li>
+      <li>证书能够自动续期，订阅凭据和客户端 UUID 可以随时轮换。</li>
+      <li>保留服务状态、监听端口、客户端实测和日志四层检查方法。</li>
+      <li>根域名与节点子域名职责独立，网站部署不会影响代理入口。</li>
+    </ul>
+
+    <p>这次部署最大的收获不是记住某几个表单值，而是建立了一个可以复述的模型：DNS 决定去哪里，防火墙决定能不能到，REALITY 参数决定能不能握手，客户端与订阅决定配置如何分发，日志和真实流量则决定它是否真的可用。</p>
   </article>
 </SiteLayout>

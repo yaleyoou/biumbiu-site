@@ -7,10 +7,10 @@ interface Props {
 
 const { currentPath } = Astro.props;
 const links = [
-  { href: "/projects/", label: "项目", number: "01." },
-  { href: "/notes/", label: "笔记", number: "02." },
-  { href: "/now/", label: "现在", number: "03." },
-  { href: "/about/", label: "关于", number: "04." }
+  { href: "/projects/", label: "项目" },
+  { href: "/notes/", label: "笔记" },
+  { href: "/now/", label: "现在" },
+  { href: "/about/", label: "关于" }
 ];
 ---
 
@@ -23,7 +23,7 @@ const links = [
     <nav class="desktop-nav" aria-label="主导航">
       {links.map((link) => (
         <a class:list={["nav-link", { active: currentPath.startsWith(link.href) }]} href={link.href}>
-          <span>{link.number}</span>{link.label}
+          {link.label}
         </a>
       ))}
     </nav>
@@ -37,7 +37,7 @@ const links = [
   <nav class="mobile-nav" aria-label="移动端导航" data-mobile-nav>
     {links.map((link) => (
       <a class:list={["mobile-nav-link", { active: currentPath.startsWith(link.href) }]} href={link.href}>
-        <span>{link.number}</span>{link.label}
+        {link.label}
       </a>
     ))}
   </nav>

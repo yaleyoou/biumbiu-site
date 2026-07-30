@@ -1,0 +1,177 @@
+---
+import { ArrowLeft, ArrowUpRight, Check } from "lucide-astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+
+const stack = [
+  {
+    label: "Compute",
+    title: "NVIDIA B300",
+    copy: "承载模型推理负载，并围绕显存占用、计算利用率和多请求并发建立性能基线。"
+  },
+  {
+    label: "Runtime",
+    title: "SGLang",
+    copy: "Kimi K3 已通过 SGLang 完成部署，当前重点从“能够运行”转向稳定性与推理效率。"
+  },
+  {
+    label: "Measurement",
+    title: "Data & Analysis",
+    copy: "持续收集运行和请求数据，分析不同负载、并发与上下文条件下的实际表现。"
+  },
+  {
+    label: "Access",
+    title: "Token Relay",
+    copy: "中转站已经搭建完成，为外部调用提供统一入口，并为后续鉴权、限流和观测预留边界。"
+  }
+];
+
+const completed = [
+  "完成 Kimi K3 在 NVIDIA B300 平台上的基础推理环境搭建",
+  "使用 SGLang 部署模型并打通完整请求链路",
+  "开始收集运行与请求数据，进入整理和分析阶段",
+  "完成 Token 中转站搭建，对外提供统一调用入口"
+];
+
+const inProgress = [
+  "建立可复现的基准测试条件，减少单次测量带来的偶然性",
+  "对比批处理、并发、上下文长度与运行参数对推理表现的影响",
+  "定位吞吐、时延、显存利用率和稳定性之间的约束关系",
+  "补齐中转层的访问控制、限流、日志和故障观测能力"
+];
+
+const metrics = [
+  {
+    key: "TTFT",
+    title: "首 Token 时延",
+    copy: "观察请求进入后到首个 Token 返回的时间，判断排队、预填充与调度开销。"
+  },
+  {
+    key: "TPOT",
+    title: "单 Token 生成时延",
+    copy: "拆解持续解码阶段的生成效率，避免只看总响应时间掩盖真实瓶颈。"
+  },
+  {
+    key: "TPS",
+    title: "吞吐与并发",
+    copy: "在不同并发和上下文长度下测量有效吞吐，寻找性能与体验之间的平衡点。"
+  },
+  {
+    key: "GPU",
+    title: "显存与稳定性",
+    copy: "跟踪显存占用、利用率、失败请求和长时间运行状态，确认优化不会牺牲可靠性。"
+  }
+];
+---
+
+<SiteLayout
+  title="Kimi K3 Inference Stack"
+  description="Kimi K3 在 NVIDIA B300 上的 SGLang 部署、推理优化、数据分析与 Token 中转服务实践。"
+  image="/images/project-research.webp"
+>
+  <header class="project-detail-hero shell reveal">
+    <a class="project-back-link" href="/projects/">
+      <ArrowLeft size={15} aria-hidden="true" /> 返回项目
+    </a>
+    <p class="eyebrow">Ongoing / AI inference systems</p>
+    <h1>Kimi K3<br />Inference Stack</h1>
+
+    <div class="project-detail-summary">
+      <p class="project-detail-lead">
+        从模型部署到外部服务的一条完整推理链路：以 NVIDIA B300 提供算力，使用 SGLang 部署 Kimi K3，
+        通过持续的数据收集与分析推进推理优化，并由 Token 中转站提供统一调用入口。
+      </p>
+      <dl class="project-facts">
+        <div><dt>Status</dt><dd><span class="status-dot" aria-hidden="true"></span>Ongoing</dd></div>
+        <div><dt>Runtime</dt><dd>SGLang</dd></div>
+        <div><dt>Compute</dt><dd>NVIDIA B300</dd></div>
+        <div><dt>Access</dt><dd>Token Relay</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <article class="project-detail-body">
+    <section class="detail-section shell">
+      <div class="detail-section-heading">
+        <p class="detail-index">Context</p>
+        <h2>不止让模型跑起来。</h2>
+      </div>
+      <div class="project-story">
+        <p>
+          这个项目的目标不是完成一次性的部署演示，而是把算力环境、推理引擎、性能测量、优化实验和外部访问入口连接成一套可以持续迭代的系统。
+        </p>
+        <p>
+          当前 Kimi K3 已经通过 SGLang 部署到 NVIDIA B300 平台，基础请求链路可以工作；首轮运行与请求数据正在持续收集和分析；面向外部调用的 Token 中转站也已经搭建完成。
+        </p>
+        <p>
+          下一阶段不会急于给出一个孤立的性能数字，而是先建立可复现的基线，再判断不同负载、并发、上下文长度和运行参数分别改变了什么。
+        </p>
+      </div>
+    </section>
+
+    <section class="detail-section shell">
+      <div class="detail-section-heading">
+        <p class="detail-index">System</p>
+        <h2>从算力到调用入口。</h2>
+      </div>
+      <div class="stack-flow" aria-label="Kimi K3 推理服务链路">
+        {stack.map((item) => (
+          <article class="stack-stage">
+            <div class="stack-stage-meta"><span>{item.label}</span></div>
+            <h3>{item.title}</h3>
+            <p>{item.copy}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="detail-section shell">
+      <div class="detail-section-heading">
+        <p class="detail-index">Progress</p>
+        <h2>当前做到哪里。</h2>
+      </div>
+      <div class="progress-columns">
+        <section class="progress-column">
+          <p class="progress-label">Completed</p>
+          <ul>
+            {completed.map((item) => (
+              <li><Check size={16} aria-hidden="true" /><span>{item}</span></li>
+            ))}
+          </ul>
+        </section>
+        <section class="progress-column progress-current">
+          <p class="progress-label">In progress</p>
+          <ul>
+            {inProgress.map((item) => (
+              <li><span class="progress-marker" aria-hidden="true"></span><span>{item}</span></li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </section>
+
+    <section class="detail-section shell">
+      <div class="detail-section-heading">
+        <p class="detail-index">Measurement</p>
+        <h2>用数据决定优化方向。</h2>
+      </div>
+      <div class="metric-grid">
+        {metrics.map((metric) => (
+          <article class="metric-item">
+            <p>{metric.key}</p>
+            <h3>{metric.title}</h3>
+            <span>{metric.copy}</span>
+          </article>
+        ))}
+      </div>
+      <p class="measurement-note">
+        项目仍在进行中。具体性能数字会在测试条件、样本规模和对照方案稳定后再公开，避免把偶然结果当作优化结论。
+      </p>
+    </section>
+
+    <section class="project-next shell">
+      <p class="detail-index">Next checkpoint</p>
+      <h2>形成可复现的基线报告，再进入有针对性的参数优化与压力测试。</h2>
+      <a class="archive-link" href="/now/">查看当前进度 <ArrowUpRight size={15} aria-hidden="true" /></a>
+    </section>
+  </article>
+</SiteLayout>

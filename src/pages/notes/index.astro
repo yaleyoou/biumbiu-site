@@ -5,8 +5,14 @@ import PageIntro from "../../components/PageIntro.astro";
 const notes = [
   {
     date: "2026.07.30",
-    title: "从一台 VPS 到可维护的个人基础设施",
-    summary: "把节点、订阅、证书、安全入口与备份组合成一个完整的运维闭环。",
+    title: "从本地预览到正式域名",
+    summary: "记录使用 Astro、GitHub 和 Cloudflare Pages 设计、构建并上线个人网站的完整过程。",
+    href: "/notes/website-launch/"
+  },
+  {
+    date: "2026.07.30",
+    title: "从零搭建一个美国节点",
+    summary: "复盘 Cloudflare DNS、3x-ui、VLESS REALITY、订阅服务与性能调优的完整部署过程。",
     href: "/notes/personal-infrastructure/"
   },
   {
@@ -31,7 +37,7 @@ const notes = [
 ---
 
 <SiteLayout title="笔记" description="关于系统、AI 和构建过程的现场笔记。">
-  <PageIntro eyebrow="02 / Field notes" title="笔记" description="写下经过验证的事实、失败的路径和最终做出的取舍。保持具体，也允许结论随着经验更新。" />
+  <PageIntro eyebrow="Field notes" title="笔记" description="写下经过验证的事实、失败的路径和最终做出的取舍。保持具体，也允许结论随着经验更新。" />
   <section class="content-section shell">
     <div class="notes-grid">
       {notes.map((note) => (

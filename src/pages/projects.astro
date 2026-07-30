@@ -1,25 +1,41 @@
 ---
+import { ArrowUpRight } from "lucide-astro";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import PageIntro from "../components/PageIntro.astro";
 
 const projects = [
   {
-    id: "network",
-    image: "/images/project-network.webp",
-    alt: "电子电路板的细节",
-    meta: "2026 · Personal infrastructure",
-    title: "Private Network Lab",
-    copy: "从域名、VPS 和 Xray 到 HTTPS 订阅、证书续期与异地备份。重点不是把服务跑起来，而是让它保持可维护、可恢复，并且不把管理面暴露在公网。",
-    tags: ["Linux", "Xray", "Cloudflare", "Security"]
+    id: "kimi-k3",
+    image: "/images/project-research.webp",
+    alt: "在电脑上进行模型部署与调试",
+    meta: "Ongoing · AI inference systems",
+    title: "Kimi K3 Inference Stack",
+    copy: "将 Kimi K3 部署到 NVIDIA B300 平台，围绕吞吐、时延、显存利用率和并发能力持续优化推理链路；同时搭建安全、稳定的 Token 中转服务，为外部调用提供统一、可控的访问入口。",
+    tags: ["Kimi K3", "NVIDIA B300", "Inference", "Token Gateway"],
+    href: "/projects/kimi-k3/",
+    contain: false
   },
   {
-    id: "research",
+    id: "auto-sci-find",
     image: "/images/project-research.webp",
-    alt: "桌面上的电脑和研究工作区",
-    meta: "Ongoing · Research systems",
-    title: "Research Workbench",
-    copy: "围绕检索、阅读、实验和写作搭建可重复的工作流。目标不是积累更多工具，而是减少从问题到可靠结论之间的摩擦。",
-    tags: ["AI Agents", "Notes", "Experiments"]
+    alt: "研究人员在电脑前协作分析",
+    meta: "2026.04–06 · AI4S research agents",
+    title: "Auto-Sci-Find Multi-Agent",
+    copy: "面向 AI4S 竞赛构建的自动化科研框架，将文献调研、代码实验、质量检查和反思迭代连接成可执行、可追踪、可回退的闭环；赛后继续将调研链路深化为领域谱系系统。",
+    tags: ["AI4S", "Multi-Agent", "SurveyAgent", "Research Automation"],
+    href: "/projects/auto-sci-find-multiagent/",
+    contain: false
+  },
+  {
+    id: "ascend-kernel-to-serving",
+    image: "/images/ustc-kernel-competition-poster.png",
+    alt: "中国科学技术大学首届算子开发创新大赛项目海报",
+    meta: "2026.01–04 · Competition teaching assistant",
+    title: "Ascend Kernel-to-Serving Pipeline",
+    copy: "面向 Ascend 910B3 与 Triton-Ascend 的算子开发竞赛，完成全流程 baseline、Paged Attention 与 Quest Sparse Attention 集成，并为 vLLM-Ascend 建立分层正确性、吞吐、Serving 和图模式评测体系。",
+    tags: ["Triton-Ascend", "Ascend NPU", "vLLM-Ascend", "Sparse Attention"],
+    href: "/projects/ascend-kernel-to-serving/",
+    contain: true
   },
   {
     id: "website",
@@ -28,17 +44,19 @@ const projects = [
     meta: "2026 · Web craft",
     title: "BiumBiu.com",
     copy: "一个轻量、快速并且属于自己的公开空间。Astro 输出纯静态页面，内容随代码版本化，由 Cloudflare Pages 自动部署。",
-    tags: ["Astro", "TypeScript", "Cloudflare Pages"]
+    tags: ["Astro", "TypeScript", "Cloudflare Pages"],
+    href: "/notes/website-launch/",
+    contain: false
   }
 ];
 ---
 
 <SiteLayout title="项目" description="BiumBiu 的项目与持续构建中的工作。">
-  <PageIntro eyebrow="01 / Selected work" title="项目" description="这里记录已经交付的结果，也保留那些仍在形成中的系统。每个项目都应该能说明问题、约束与取舍。" />
+  <PageIntro eyebrow="Selected work" title="项目" description="这里记录已经交付的结果，也保留那些仍在形成中的系统。每个项目都应该能说明问题、约束与取舍。" />
   <section class="content-section shell">
     {projects.map((project) => (
       <article class="project-feature" id={project.id}>
-        <div class="project-image">
+        <div class:list={["project-image", { "project-image-contain": project.contain }]}>
           <img src={project.image} alt={project.alt} width="1400" height="1000" loading="lazy" />
         </div>
         <div class="project-copy">
@@ -48,6 +66,11 @@ const projects = [
           <div class="tag-row">
             {project.tags.map((tag) => <span class="tag">{tag}</span>)}
           </div>
+          {project.href && (
+            <a class="project-detail-link" href={project.href}>
+              查看项目详情 <ArrowUpRight size={15} aria-hidden="true" />
+            </a>
+          )}
         </div>
       </article>
     ))}

@@ -1,0 +1,104 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+---
+
+<SiteLayout
+  title="从本地预览到正式域名：BiumBiu 个人网站上线记录"
+  description="记录使用 Astro、GitHub 与 Cloudflare Pages 搭建、设计并上线 BiumBiu 个人网站的完整过程。"
+  image="/images/project-web.webp"
+>
+  <article class="prose">
+    <header class="prose-header reveal">
+      <p class="eyebrow">Build log · 2026.07.30</p>
+      <h1>从本地预览到正式域名</h1>
+      <p>一次使用 Astro、GitHub 和 Cloudflare Pages 搭建 BiumBiu 个人网站的完整记录。</p>
+    </header>
+
+    <p>有了自己的域名以后，我不想只放一个临时首页，而是希望得到一个能长期更新的公开空间：它可以介绍我正在做什么，展示项目，也能沉淀每一次真正解决过的问题。最终，这个网站以 Astro 构建，源码保存在 GitHub，并由 Cloudflare Pages 自动发布到 <code>biumbiu.com</code>。</p>
+
+    <blockquote>Astro 本地开发 → GitHub 版本管理 → Cloudflare Pages 自动构建 → biumbiu.com</blockquote>
+
+    <h2>开始前需要准备什么</h2>
+    <p>这套流程需要一台安装了 Node.js、npm 与 Git 的电脑，一个 GitHub 账号、一个 Cloudflare 账号，以及已经接入 Cloudflare DNS 的域名。绑定前还要检查根域名和 <code>www</code> 是否存在旧的 A、AAAA 或 CNAME 记录，避免它们仍然指向其他服务。</p>
+    <p>如果从现有仓库继续开发，先克隆仓库并运行 <code>npm install</code>；如果是全新 Astro 项目，则先完成本地页面，再进入 GitHub 和 Cloudflare。无论哪种情况，都应该先让本地开发和生产构建正常，再配置正式域名。</p>
+
+    <h2>先确定网站要承担什么</h2>
+    <p>这个站点不是一个需要登录、数据库和复杂后台的 Web 应用。第一阶段最重要的是内容与阅读体验，因此我把页面收敛为首页、关于、项目、当前状态和笔记五个部分。</p>
+    <ul>
+      <li>首页快速说明我是谁、关注什么，以及最近发布了哪些内容。</li>
+      <li>项目页保存做过的系统、工具和网站，而不是只列技术名词。</li>
+      <li>笔记页记录部署、排错和取舍，让经验以后仍然可以检索。</li>
+      <li>关于与当前状态页负责相对稳定的信息，不挤占首页主体。</li>
+    </ul>
+    <p>内容展示为主的网站很适合静态生成。Astro 可以在构建阶段把页面输出成普通 HTML，访问时不依赖我自己的 VPS，也不需要为一个个人站点维护常驻后端。源码仍然是清晰的组件和页面文件，后续扩展 Markdown、RSS 或内容集合也有空间。</p>
+
+    <h2>本地开发先建立清楚的结构</h2>
+    <p>项目中，<code>src/pages/</code> 决定页面路由，<code>src/components/</code> 放导航和页脚等公共组件，<code>src/layouts/</code> 统一标题、SEO 元信息和页面骨架，<code>src/styles/</code> 管理视觉系统，图片则放在 <code>public/images/</code>。</p>
+    <p>安装依赖后运行 <code>npm run dev</code>，浏览器打开 <code>http://127.0.0.1:4321/</code> 就能预览。这里的 <code>127.0.0.1</code> 只属于当前 Mac，并不是互联网上的正式地址；它的作用是让我在发布前快速查看修改结果。</p>
+    <p>设计上，我参考了 Brittany Chiang 个人站点清晰的双栏信息架构，但没有直接复制。桌面端使用固定的个人信息栏和可滚动内容区，移动端收敛成单栏；鼠标跟随光效只在支持精细指针的桌面设备启用，并尊重系统的减少动态效果设置。项目卡片、文章入口和焦点状态则沿用自己的颜色、字体与交互节奏。</p>
+
+    <h2>发布前先让构建通过</h2>
+    <p>开发页面能打开，不代表生产构建一定成功。提交前运行 <code>npm run build</code>，它会先执行 Astro 检查，再生成静态文件到 <code>dist/</code>。这一步可以提前发现错误的导入、类型问题和无法生成的页面。</p>
+    <p>我还分别检查了桌面和手机尺寸，确认文字没有溢出，移动导航可以操作，图片能够加载，站内链接不会跳到不存在的页面。视觉测试和实际点击都通过以后，才把这一版交给部署平台。</p>
+
+    <h2>GitHub 是源码与发布历史</h2>
+    <p>网站源码保存在一个独立的 <code>biumbiu-site</code> 仓库，生产分支为 <code>main</code>。第一次发布的顺序是：</p>
+    <ol>
+      <li>使用 <code>git init</code> 初始化仓库。</li>
+      <li>运行 <code>git add .</code>，再用 <code>git commit -m "feat: create personal website"</code> 创建首次提交。</li>
+      <li>使用 <code>git branch -M main</code> 统一生产分支名称。</li>
+      <li>通过 <code>git remote add origin GITHUB_REPOSITORY_URL</code> 连接远程仓库。</li>
+      <li>运行 <code>git push -u origin main</code> 完成首次推送。</li>
+    </ol>
+    <p>连接 Cloudflare 时，我把 Cloudflare GitHub App 的权限限制到这个仓库，而不是开放全部仓库。自动部署确实方便，但仓库仍然不能提交密码、API Token、SSH 私钥、订阅链接或其他凭据。静态前端也不能保存运行时秘密：构建变量一旦被输出到 HTML 或浏览器 JavaScript 中，就已经是公开内容。Cloudflare 环境变量只适合构建过程确实需要、且不会进入客户端产物的值。</p>
+
+    <h2>第一次部署走错了入口</h2>
+    <p>Cloudflare 把 Workers 与 Pages 放在相近的管理入口里，我第一次创建成了 Worker + Static Assets。构建日志中出现 <code>npx wrangler deploy</code>，最终地址也是 <code>*.workers.dev</code>。它同样可以发布静态资源，但不是我原先计划的 Pages Git 集成路径。</p>
+    <p>确认问题后，我重新选择 Pages，并通过 GitHub 仓库创建项目。正确部署完成后得到 <code>biumbiu-site.pages.dev</code> 地址。先在这个临时域名验证网站，再绑定正式域名；旧 Worker 也等到 Pages 可用后再删除，避免网站中途没有可用版本。</p>
+    <blockquote><code>workers.dev</code> 和 <code>pages.dev</code> 都可能显示网页，但它们代表不同的 Cloudflare 产品与部署流程。</blockquote>
+
+    <h2>Cloudflare Pages 的构建设置</h2>
+    <p>Pages 连接 GitHub 仓库后，核心构建参数并不多：</p>
+    <ul>
+      <li>生产分支使用 <code>main</code>。</li>
+      <li>Framework preset 选择 <code>Astro</code>。</li>
+      <li>Build command 使用 <code>npm run build</code>。</li>
+      <li>Build output directory 使用 <code>dist</code>。</li>
+      <li>项目位于仓库根目录，因此 Root directory 保持根目录或留空。</li>
+    </ul>
+    <p>首次构建成功后，Pages 会提供独立预览地址。以后只要 GitHub 的 <code>main</code> 分支出现新提交，Cloudflare 就会重新安装依赖、构建并发布，不需要手动上传压缩包。</p>
+
+    <h2>绑定根域名，同时保留 VPS 子域名</h2>
+    <p>在 Pages 项目的自定义域名中，我分别添加了 <code>biumbiu.com</code> 和 <code>www.biumbiu.com</code>。按照向导完成 DNS 校验后，Cloudflare 为它们提供 HTTPS 证书。证书签发与 DNS 生效可能需要一点时间，因此绑定后应分别访问两个地址，而不是只看后台状态。</p>
+    <p>同一个域名的不同记录可以承担不同职责。根域名和 <code>www</code> 指向 Pages；这里原先连接 VPS 的子域名承载的是需要直连源站的特定非 HTTP 服务，因此继续保持 DNS only。DNS only 会公开源站 IP，并不是所有 VPS 网站的通用选择；普通 HTTP/HTTPS 服务是否开启 Cloudflare 代理，应根据协议、端口和源站保护需求决定。绑定网站时只修改目标记录，不删除或覆盖其他子域名。</p>
+
+    <h2>把 www 统一到根域名</h2>
+    <p>两个地址都能打开以后，我进入域名级的 <code>Rules → Redirect Rules → Single Redirects</code>，在通配符模式下使用 “Redirect from WWW to root” 模板，将 <code>https://www.biumbiu.com/*</code> 以 301 跳转到 <code>{"https://biumbiu.com/${1}"}</code>，并保留查询字符串。若改用自定义表达式模式，目标 URL 的写法会不同，不能直接照搬通配符替换语法。</p>
+    <p>这一步让外部链接始终收敛到一个正式地址，也避免根域名与 <code>www</code> 长期展示两份相同内容。验证时不仅要打开首页，还应测试带路径的文章地址，确认跳转后路径和查询参数没有丢失。</p>
+
+    <h2>以后如何发布与修改内容</h2>
+    <p>当前网站直接使用 Astro 页面管理内容。新增一篇笔记时，在 <code>src/pages/notes/</code> 创建新的 <code>.astro</code> 文件，再把标题、摘要和链接加入 <code>src/pages/notes/index.astro</code>；如果希望它出现在首页，还要更新 <code>src/pages/index.astro</code> 中的最近文章数组。</p>
+    <p>删除文章时顺序相反：先移除首页和笔记列表的入口，再删除对应页面。<code>npm run build</code> 可以发现导入与生成错误，但不会自动识别所有普通 <code>href</code> 坏链，因此还要实际点击主要入口，或使用链接检查工具爬取构建结果。修改邮箱可以在仓库中搜索旧地址，同时更新可见文本和 <code>mailto:</code> 链接。网页上的邮箱链接并不会自动创建邮箱账户，真正的收信服务仍要单独配置。</p>
+    <p>每次更新的发布流程保持一致：</p>
+    <ol>
+      <li>运行 <code>npm run dev</code>，在桌面和手机尺寸下预览。</li>
+      <li>使用 <code>git status</code> 和 <code>git diff</code> 确认本次实际改动。</li>
+      <li>运行 <code>npm run build</code>，确认 Astro 检查与静态构建通过。</li>
+      <li>只添加准备发布的文件，创建一条说明清楚的 Git 提交。</li>
+      <li>推送到 <code>main</code>，等待 Cloudflare Pages 构建成功。</li>
+      <li>打开正式域名，检查首页、新页面、移动端与主要链接。</li>
+    </ol>
+
+    <h2>这次上线留下的经验</h2>
+    <ul>
+      <li>先确定网站内容与路由，再选择动画和视觉细节。</li>
+      <li>本地预览、生产构建和线上访问是三个不同的验证阶段。</li>
+      <li>看到 <code>workers.dev</code> 或 <code>pages.dev</code> 时，要确认自己创建的是哪个产品。</li>
+      <li>先验证 Pages 临时域名，再绑定正式域名，最后清理错误项目。</li>
+      <li>根域、<code>www</code> 和 VPS 子域名必须有明确分工，DNS 修改只碰目标记录。</li>
+      <li>自动部署减少了重复操作，但不能替代发布前的构建与页面检查。</li>
+      <li>Git 提交不仅用于上线，也为误删页面和错误修改保留恢复路径。</li>
+    </ul>
+    <p>现在的 BiumBiu 已经形成一个最小但完整的发布闭环：本地编写和预览，GitHub 保存源码与历史，Cloudflare Pages 负责构建、HTTPS 和全球分发，正式域名负责长期入口。下一步不是继续堆叠页面，而是持续发布真实内容；当文章数量增长后，再把笔记迁移到 Astro Content Collections，用 Markdown 和统一元数据减少重复维护。</p>
+  </article>
+</SiteLayout>
