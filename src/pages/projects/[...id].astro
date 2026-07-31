@@ -21,7 +21,14 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<SiteLayout title={entry.data.title} description={entry.data.description} image={entry.data.image} article>
+<SiteLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  image={entry.data.image}
+  article
+  publishedTime={entry.data.date}
+  modifiedTime={entry.data.updated ?? entry.data.date}
+>
   <ContentHeader collection="projects" displayTitle={entry.data.cardTitle} {...entry.data} />
   <article class="prose content-article project-article">
     <Content />

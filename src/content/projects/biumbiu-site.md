@@ -9,7 +9,7 @@ stack: "Astro / Cloudflare"
 image: "/images/project-web.webp"
 imageAlt: "显示个人网站源码的开发工作区"
 tags: ["Astro", "TypeScript", "Content Collections", "Cloudflare Pages"]
-featured: true
+featured: false
 order: 4
 ---
 

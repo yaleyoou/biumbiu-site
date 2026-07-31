@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
     "@fontsource-variable/manrope": "^5.2.6",
     "@fontsource-variable/newsreader": "^5.2.5",
     "astro": "^5.13.5",

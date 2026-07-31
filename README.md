@@ -122,6 +122,7 @@ npm run dev -- --host 0.0.0.0
 biumbiu-site/
 ├── public/
 │   ├── favicon.svg
+│   ├── robots.txt                      # 搜索引擎抓取与 sitemap 入口
 │   └── images/                         # 网站图片
 ├── scripts/
 │   └── new-content.mjs                 # 新建内容脚手架
@@ -136,6 +137,7 @@ biumbiu-site/
 │   │   └── content.ts                  # 排序、日期和 URL 工具
 │   ├── pages/
 │   │   ├── index.astro                 # 首页
+│   │   ├── rss.xml.ts                  # 自动生成笔记 RSS
 │   │   ├── notes/
 │   │   │   ├── index.astro             # 笔记归档
 │   │   │   └── [...id].astro           # 笔记动态详情页
@@ -790,18 +792,6 @@ src/pages/index.astro
 
 首页的个人介绍和近况不是文章内容，目前仍直接维护在该页面中。
 
-### About 页面
-
-文件：
-
-```text
-src/pages/about.astro
-```
-
-这里维护较稳定的个人介绍、长期关注方向、项目轨迹、工作方式和生活兴趣。只有身份、长期方向或主要经历发生变化时才需要更新。
-
-页面顶部的 `Last updated` 日期需要在内容发生实质修改时手动更新。
-
 ### Now 页面
 
 文件：
@@ -830,7 +820,7 @@ src/components/Header.astro
 src/components/Footer.astro
 ```
 
-### 默认 SEO 描述、Open Graph 和页面标题
+### SEO、Open Graph、Twitter Card 和文章时间
 
 文件：
 
@@ -838,7 +828,19 @@ src/components/Footer.astro
 src/layouts/SiteLayout.astro
 ```
 
-每篇项目或笔记会自动使用自己的 `title`、`description` 和 `image` 覆盖默认信息。
+每篇项目或笔记会自动使用自己的 `title`、`description` 和 `image` 覆盖默认信息。项目与笔记的 `date`、`updated` 还会自动生成文章发布时间和更新时间元数据。
+
+笔记 RSS 地址为：
+
+```text
+https://biumbiu.com/rss.xml
+```
+
+站点地图由 Astro 在生产构建时自动生成，入口为：
+
+```text
+https://biumbiu.com/sitemap-index.xml
+```
 
 ### 正式域名与静态构建配置
 
