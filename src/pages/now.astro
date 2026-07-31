@@ -1,26 +1,179 @@
 ---
+import { ArrowUpRight, Mail } from "lucide-astro";
 import SiteLayout from "../layouts/SiteLayout.astro";
-import PageIntro from "../components/PageIntro.astro";
+
+const learningMap = [
+  {
+    label: "Systems foundation",
+    title: "把系统基础补扎实",
+    copy: "继续理解计算机体系结构、操作系统、并行计算、网络与分布式系统。AI Infra 的很多问题最终都会回到计算、存储、通信和调度，基础决定了能把问题追到多深。",
+    topics: ["Architecture", "OS", "Parallel Computing", "Networking"]
+  },
+  {
+    label: "Inference engine",
+    title: "理解推理引擎如何工作",
+    copy: "从使用 SGLang、vLLM 等框架走向理解内部机制，关注请求调度、Continuous Batching、KV Cache、Prefill/Decode 分离、并行策略与服务化指标。",
+    topics: ["Scheduling", "KV Cache", "Serving", "Benchmark"]
+  },
+  {
+    label: "Kernel optimization",
+    title: "建立算子与硬件视角",
+    copy: "继续学习 Triton、GPU/NPU 执行模型、访存与计算划分，理解 kernel 的正确性、数值稳定性和性能边界，以及局部优化如何影响端到端系统。",
+    topics: ["Triton", "Attention", "Memory", "Profiling"]
+  },
+  {
+    label: "Agent systems",
+    title: "让 Agent 从演示走向可靠",
+    copy: "关注工具调用、任务规划、上下文管理、长期记忆、评测和证据链。比起增加更多角色，我更想研究 Agent 如何在长任务里保持状态、承认缺口并恢复执行。",
+    topics: ["Tool Use", "Context", "Evaluation", "Evidence"]
+  }
+];
+
+const practice = [
+  ["用项目作为课程", "部署模型、接入 kernel 或搭建 Agent 时，把遇到的问题反向变成需要补齐的知识，而不是把学习和项目分成两条互不相干的线。"],
+  ["把测量当作基本能力", "固定环境、输入、版本和统计口径，区分局部指标与端到端结果；先确认数据能回答什么，再讨论优化是否有效。"],
+  ["持续写技术记录", "把配置、失败路径和判断依据写下来。写作不是最后的包装，而是检查自己是否真正理解，以及给未来保留可继续工作的起点。"],
+  ["控制信息摄入", "AI 领域更新很快，但并不是每个新框架都值得立刻追。优先理解能迁移的机制，再选择与当前问题直接相关的工具。"]
+];
+
+const decisionQuestions = [
+  "我是否真正喜欢长期面对开放问题、反复失败和不确定回报的日常？",
+  "我更希望在一个方向上形成研究深度，还是更早进入真实产品与大规模工程环境？",
+  "哪些导师、课题组和研究问题值得投入数年，而不是只对“读博”这个身份感兴趣？",
+  "实际的科研合作、论文过程和工程实习，分别让我在哪种工作状态下更投入？"
+];
 ---
 
-<SiteLayout title="现在" description="BiumBiu 最近正在做的事情。">
-  <PageIntro eyebrow="Now" title="现在" description="这是一份有日期的近况，而不是永久正确的个人介绍。最后更新于 2026 年 7 月。" />
-  <section class="content-section shell">
-    <div class="now-grid">
-      <h2>正在部署</h2>
-      <p>将 Kimi K3 部署到 NVIDIA B300 平台，建立稳定、可复现的模型推理环境。</p>
+<SiteLayout title="现在" description="BiumBiu 当前所处的研究生阶段、长期学习方向，以及对读博与就业选择的思考。">
+  <header class="now-hero shell reveal">
+    <p class="eyebrow">Now / Current season</p>
+    <div class="now-hero-grid">
+      <h1>现在</h1>
+      <div>
+        <p class="now-hero-lead">我在中国科学技术大学读计算机专业研一，正处在建立技术基础、寻找长期方向，也逐渐理解自己适合怎样工作的阶段。</p>
+        <p>这不是一张每周更新的任务清单，而是一份当前生活重心的说明。只有当阶段、方向或重要选择发生变化时，它才需要更新。</p>
+      </div>
     </div>
-    <div class="now-grid">
-      <h2>正在优化</h2>
-      <p>围绕吞吐、时延、显存利用率和并发能力持续优化推理链路。</p>
+    <div class="now-status" aria-label="当前状态">
+      <span><strong>Stage</strong> 研究生一年级</span>
+      <span><strong>Focus</strong> AI Infra · Inference · Kernel · Agent</span>
+      <span><strong>Updated</strong> 2026-07-31</span>
     </div>
-    <div class="now-grid">
-      <h2>正在搭建</h2>
-      <p>构建安全、稳定的 Token 中转服务，为外部调用提供统一、可控的访问入口。</p>
+  </header>
+
+  <section class="now-chapter shell">
+    <div class="now-chapter-label">
+      <p class="eyebrow">Current chapter</p>
+      <span>先建立判断力，再急着选择标签。</span>
     </div>
-    <div class="now-grid">
-      <h2>默认原则</h2>
-      <p>保持系统简单；让事实可验证；在增加工具前先减少摩擦。</p>
+    <div class="now-chapter-copy">
+      <h2>研一对我来说，是把兴趣变成能力的起点。</h2>
+      <p>我已经确定自己对大模型推理、AI Infrastructure、算子优化和 Agent 系统有持续兴趣，但还不想过早把方向压缩成一个很窄的关键词。现在更重要的是补齐系统基础，真正做过一轮部署、测量、优化和复盘，再判断哪些问题值得长期投入。</p>
+      <p>这段时间的主线不是“学会尽可能多的工具”，而是建立一种能够迁移的理解：模型如何落到硬件执行，请求如何被推理引擎调度，局部优化怎样传递到 Serving，以及 Agent 如何在复杂任务中保持可靠。</p>
     </div>
+  </section>
+
+  <section class="now-section shell">
+    <div class="now-section-heading">
+      <p class="eyebrow">Learning map</p>
+      <h2>未来一段时间持续学习的四个层次</h2>
+      <p>这张地图足够稳定，不会因为出现一个新框架就重写。工具会变化，但底层问题会反复出现。</p>
+    </div>
+    <div class="now-learning-map">
+      {learningMap.map((item) => (
+        <article>
+          <p class="now-map-label">{item.label}</p>
+          <h3>{item.title}</h3>
+          <p>{item.copy}</p>
+          <div class="pill-list">{item.topics.map((topic) => <span>{topic}</span>)}</div>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="now-section now-project-band">
+    <div class="shell">
+      <div class="now-section-heading">
+        <p class="eyebrow">Learning by building</p>
+        <h2>用真实项目检验理解</h2>
+        <p>项目不是学习结束后的展示，而是暴露知识缺口的方法。</p>
+      </div>
+      <div class="now-project-links">
+        <a href="/projects/kimi-k3/">
+          <span>正在进行</span>
+          <h3>Kimi K3 Inference Stack <ArrowUpRight size={16} aria-hidden="true" /></h3>
+          <p>继续完善 B300 + SGLang 推理链路、性能基线、数据分析与服务边界。</p>
+        </a>
+        <a href="/projects/ascend-kernel-to-serving/">
+          <span>继续消化</span>
+          <h3>Kernel-to-Serving <ArrowUpRight size={16} aria-hidden="true" /></h3>
+          <p>把算子竞赛中的 Triton-Ascend、Attention 和端到端评测经验整理成更系统的理解。</p>
+        </a>
+        <a href="/projects/auto-sci-find-multiagent/">
+          <span>继续深化</span>
+          <h3>Research Agent <ArrowUpRight size={16} aria-hidden="true" /></h3>
+          <p>继续思考文献证据、长期任务状态、质量闸门和 Agent 评测怎样形成可靠闭环。</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="now-section shell">
+    <div class="now-section-heading">
+      <p class="eyebrow">Working rhythm</p>
+      <h2>我希望长期保持的学习方式</h2>
+    </div>
+    <div class="now-practice-list">
+      {practice.map(([title, copy]) => (
+        <article>
+          <h3>{title}</h3>
+          <p>{copy}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="now-decision">
+    <div class="shell">
+      <div class="now-decision-title">
+        <p class="eyebrow">An open decision</p>
+        <h2>读博，还是就业？</h2>
+        <p>这是当前最重要、也不适合靠想象立即回答的问题。</p>
+      </div>
+      <div class="now-decision-body">
+        <p class="now-decision-lead">我不想把读博简单理解成“继续上学”，也不想把就业理解成“停止研究”。真正需要选择的，是未来几年愿意重复怎样的日常、希望在哪类问题上形成深度，以及什么环境更能让我持续投入。</p>
+        <p>现阶段不急着给出结论。我更希望在接下来的一到两年里，通过实际科研合作、完整项目、论文过程、工程实践，以及和博士生、导师和行业工程师交流，为这个选择积累真实证据。</p>
+
+        <div class="now-question-list">
+          <p>我正在观察的问题</p>
+          <ul>
+            {decisionQuestions.map((question) => <li>{question}</li>)}
+          </ul>
+        </div>
+
+        <p>如果最后选择读博，希望是因为找到了愿意长期研究的问题、合适的导师和适合自己的科研节奏；如果选择就业，也希望进入能够继续接触推理系统、性能工程或 Agent 基础设施的环境。现在的“还没有决定”不是停滞，而是在认真收集决定所需要的信息。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="now-boundaries shell">
+    <div>
+      <p class="eyebrow">Not optimizing for</p>
+      <h2>当前不急着做的事</h2>
+    </div>
+    <ul>
+      <li>不为了显得方向明确，过早给自己贴上一个很窄的研究标签。</li>
+      <li>不追逐每一个新模型、新框架和社交媒体上的短期热点。</li>
+      <li>不把忙碌、仓库数量或零散 benchmark 当成真实进步。</li>
+      <li>不让技术学习完全挤掉运动、朋友和没有目标的休息时间。</li>
+    </ul>
+  </section>
+
+  <section class="now-footer-note shell">
+    <div>
+      <p class="eyebrow">Update policy</p>
+      <p>当学习主线、人生阶段或读博与就业的判断发生实质变化时，我会更新这一页。日常项目进展会写进项目页和笔记，不在这里逐周追踪。</p>
+    </div>
+    <a class="outline-button" href="mailto:yaleyoou@gmail.com"><Mail size={15} aria-hidden="true" /> 交流近况</a>
   </section>
 </SiteLayout>

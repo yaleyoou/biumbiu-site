@@ -1,0 +1,89 @@
+---
+import { ArrowLeft, CalendarDays } from "lucide-astro";
+import { formatDate } from "../lib/content";
+
+interface Props {
+  collection: "projects" | "notes";
+  title: string;
+  displayTitle?: string;
+  description: string;
+  date: Date;
+  updated?: Date;
+  image: string;
+  imageAlt: string;
+  tags: string[];
+  category?: string;
+  period?: string;
+  role?: string;
+  status?: string;
+  stack?: string;
+  containImage?: boolean;
+  darkImage?: boolean;
+}
+
+const {
+  collection,
+  title,
+  displayTitle,
+  description,
+  date,
+  updated,
+  image,
+  imageAlt,
+  tags,
+  category,
+  period,
+  role,
+  status,
+  stack,
+  containImage = false,
+  darkImage = false
+} = Astro.props;
+
+const isProject = collection === "projects";
+const backHref = isProject ? "/projects/" : "/notes/";
+const backLabel = isProject ? "返回项目" : "返回笔记";
+const eyebrow = isProject ? `${period} / ${role}` : `${category} / ${formatDate(date)}`;
+const facts = isProject
+  ? [
+      ["Status", status],
+      ["Period", period],
+      ["Role", role],
+      ["Stack", stack]
+    ].filter((fact): fact is [string, string] => Boolean(fact[1]))
+  : [];
+---
+
+<header class="content-hero shell reveal">
+  <a class="project-back-link" href={backHref}>
+    <ArrowLeft size={15} aria-hidden="true" /> {backLabel}
+  </a>
+
+  <div class="content-hero-grid">
+    <div class="content-hero-copy">
+      <p class="eyebrow">{eyebrow}</p>
+      <h1>{displayTitle ?? title}</h1>
+      <p class="content-deck">{description}</p>
+
+      <div class="content-meta-row">
+        {!isProject && (
+          <span><CalendarDays size={14} aria-hidden="true" /> {formatDate(date)}</span>
+        )}
+        {updated && <span>更新于 {formatDate(updated)}</span>}
+        <div class="tag-row" aria-label="标签">
+          {tags.map((tag) => <span class="tag">{tag}</span>)}
+        </div>
+      </div>
+    </div>
+
+    <div class:list={["content-cover", { "content-cover-contain": containImage, "content-cover-dark": darkImage }]}>
+      <img src={image} alt={imageAlt} width="1200" height="800" fetchpriority="high" />
+    </div>
+  </div>
+
+  {facts.length > 0 && (
+    <dl class="content-facts">
+      {facts.map(([label, value]) => <div><dt>{label}</dt><dd>{value}</dd></div>)}
+    </dl>
+  )}
+</header>

@@ -1,6 +1,8 @@
 ---
 import { ArrowUpRight, BookOpen, Github, Mail } from "lucide-astro";
+import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import { byNewest, byOrderThenDate, contentPath, formatDate, isPublished } from "../lib/content";
 
 const focus = [
   {
@@ -26,49 +28,29 @@ const focus = [
   }
 ];
 
-const projects = [
-  {
-    image: "/images/project-research.webp",
-    contain: false,
-    dark: false,
-    title: "Kimi K3 Inference Stack",
-    copy: "在 NVIDIA B300 平台完成 Kimi K3 部署与推理链路调优，并通过 Token 中转服务提供稳定、统一的外部调用入口。",
-    tags: ["Kimi K3", "B300", "Inference"],
-    href: "/projects/kimi-k3/"
-  },
-  {
-    image: "/images/yxy-agent-blog-assets/research-agent-workflow.png",
-    contain: false,
-    dark: false,
-    title: "Auto-Sci-Find Multi-Agent",
-    copy: "把文献调研、代码实验、质量检查和反思迭代连接成可追踪、可回退的自动化科研闭环。",
-    tags: ["AI4S", "Multi-Agent", "SurveyAgent"],
-    href: "/projects/auto-sci-find-multiagent/"
-  },
-  {
-    image: "/images/vllm-ascend-logo-dark.png",
-    contain: true,
-    dark: true,
-    title: "Ascend Kernel-to-Serving Pipeline",
-    copy: "为算子开发大赛建立从 Triton-Ascend baseline、注意力算子到 vLLM-Ascend 集成与 Serving 评测的完整工程链路。",
-    tags: ["Ascend NPU", "Triton", "vLLM", "Evaluation"],
-    href: "/projects/ascend-kernel-to-serving/"
-  },
-  {
-    image: "/images/project-web.webp",
-    contain: false,
-    dark: false,
-    title: "BiumBiu.com",
-    copy: "由 Astro 构建的静态个人网站，内容版本化，并通过 Cloudflare Pages 自动部署。",
-    tags: ["Web", "Astro"],
-    href: "/notes/website-launch/"
-  }
-];
+const projects = (await getCollection("projects", isPublished))
+  .filter(({ data }) => data.featured)
+  .sort(byOrderThenDate)
+  .map(({ id, data }) => ({
+    image: data.image,
+    contain: data.containImage,
+    dark: data.darkImage,
+    title: data.cardTitle ?? data.title,
+    copy: data.description,
+    tags: data.tags.slice(0, 4),
+    href: contentPath("projects", id)
+  }));
 
-const notes = [
-  { date: "2026", title: "从零搭建一个个人网站", href: "/notes/website-launch/", image: "/images/project-web.webp" },
-  { date: "2026", title: "从零搭建一个美国节点", href: "/notes/personal-infrastructure/", image: "/images/project-network.webp" }
-];
+const notes = (await getCollection("notes", isPublished))
+  .filter(({ data }) => data.featured)
+  .sort(byNewest)
+  .slice(0, 4)
+  .map(({ id, data }) => ({
+    date: formatDate(data.date),
+    title: data.cardTitle ?? data.title,
+    href: contentPath("notes", id),
+    image: data.image
+  }));
 ---
 
 <SiteLayout portfolio>
@@ -98,7 +80,7 @@ const notes = [
 
       <div class="portfolio-content">
         <section class="portfolio-section about-section" id="about" data-section="about">
-          <!--<h2 class="mobile-section-title">关于</h2>-->
+          <h2 class="mobile-section-title">关于</h2>
           <p>Hi there! I'm biumbiu, a master's student in Computer Technology at the University of Science and Technology of China (USTC). I'm curious about how intelligent systems work, and I enjoy turning new ideas into things I can build, test, and understand.</p>
           <p>My current interests lie in large language model inference, AI infrastructure, and agents. I'm particularly interested in making AI systems faster, more efficient, and more capable of solving real-world problems. Whether I'm reading papers, experimenting with new tools, or working on a project, I enjoy the process of starting with an uncertain question and gradually making it clearer.</p>
           <p>Outside of research, I play basketball, practice guitar, and take photos of moments I want to remember. When there's nothing in particular to do, I like going on long walks with friends and seeing where the conversation takes us. I'm always curious about unfamiliar ideas, technologies, and places.</p>
@@ -106,7 +88,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="focus" data-section="focus">
-         <!-- <h2 class="mobile-section-title">近况</h2>  -->
+          <h2 class="mobile-section-title">近况</h2>
           <div class="row-group">
             {focus.map((item) => (
               <article class="experience-row focus-row">
@@ -124,7 +106,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="projects" data-section="projects">
-          <!-- <h2 class="mobile-section-title">项目</h2> -->
+          <h2 class="mobile-section-title">项目</h2>
           <div class="row-group">
             {projects.map((project) => (
               <a class="project-compact-row focus-row" href={project.href}>
@@ -141,7 +123,7 @@ const notes = [
         </section>
 
         <section class="portfolio-section" id="writing" data-section="writing">
-          <!-- <h2 class="mobile-section-title">笔记</h2> -->
+          <h2 class="mobile-section-title">笔记</h2>
           <div class="row-group">
             {notes.map((note) => (
               <a class="writing-row focus-row" href={note.href}>

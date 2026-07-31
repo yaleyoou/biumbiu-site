@@ -1,0 +1,29 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ContentHeader from "../../components/ContentHeader.astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { byOrderThenDate, isPublished } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const projects = (await getCollection("projects", isPublished)).sort(byOrderThenDate);
+
+  return projects.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry }
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<SiteLayout title={entry.data.title} description={entry.data.description} image={entry.data.image} article>
+  <ContentHeader collection="projects" displayTitle={entry.data.cardTitle} {...entry.data} />
+  <article class="prose content-article project-article">
+    <Content />
+  </article>
+</SiteLayout>

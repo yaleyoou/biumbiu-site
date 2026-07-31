@@ -10,13 +10,15 @@ interface Props {
   description?: string;
   image?: string;
   portfolio?: boolean;
+  article?: boolean;
 }
 
 const {
   title = "BiumBiu",
   description = "星野的项目、笔记与正在发生的事。",
   image = "/images/hero-circuit.webp",
-  portfolio = false
+  portfolio = false,
+  article = false
 } = Astro.props;
 
 const pageTitle = title === "BiumBiu" ? title : `${title} | BiumBiu`;
@@ -32,14 +34,14 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="theme-color" content="#121b18" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={article ? "article" : "website"} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{pageTitle}</title>
   </head>
-  <body class:list={{ "portfolio-body": portfolio }}>
+  <body class:list={{ "portfolio-body": portfolio, "article-body": article }}>
     <a class="skip-link" href="#main">跳到正文</a>
     {!portfolio && <Header currentPath={Astro.url.pathname} />}
     <main id="main">

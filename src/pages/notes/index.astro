@@ -1,46 +1,41 @@
 ---
-import SiteLayout from "../../layouts/SiteLayout.astro";
+import { getCollection } from "astro:content";
+import { ArrowUpRight } from "lucide-astro";
 import PageIntro from "../../components/PageIntro.astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { byNewest, contentPath, formatDate, isPublished } from "../../lib/content";
 
-const notes = [
-  {
-    date: "2026.07.30",
-    title: "从零搭建一个个人网站",
-    summary: "记录使用 Astro、GitHub 和 Cloudflare Pages 设计、构建并上线个人网站的完整过程。",
-    href: "/notes/website-launch/"
-  },
-  {
-    date: "2026.07.30",
-    title: "从零搭建一个美国节点",
-    summary: "复盘 Cloudflare DNS、3x-ui、VLESS REALITY、订阅服务与性能调优的完整部署过程。",
-    href: "/notes/personal-infrastructure/"
-  },
-  {
-    date: "Draft",
-    title: "个人网站应该先从内容结构开始",
-    summary: "框架和动画都不是第一问题，先决定这个网站未来要容纳什么。",
-    href: "/notes/"
-  },
-  {
-    date: "Draft",
-    title: "把实验记录变成可以复用的知识",
-    summary: "从一次性日志到可以检索、连接并推动下一轮工作的研究记忆。",
-    href: "/notes/"
-  }
-];
+const notes = (await getCollection("notes", isPublished)).sort(byNewest);
+const tags = [...new Set(notes.flatMap(({ data }) => data.tags))].sort((a, b) => a.localeCompare(b));
 ---
 
 <SiteLayout title="笔记" description="关于系统、AI 和构建过程的现场笔记。">
   <PageIntro eyebrow="Field notes" title="笔记" description="写下经过验证的事实、失败的路径和最终做出的取舍。保持具体，也允许结论随着经验更新。" />
+
   <section class="content-section shell">
-    <div class="notes-grid">
-      {notes.map((note) => (
-        <article class="note-card">
-          <p class="eyebrow">{note.date}</p>
-          <h2>{note.title}</h2>
-          <p>{note.summary}</p>
-          <a class="text-link" href={note.href}>阅读笔记 <span aria-hidden="true">→</span></a>
-        </article>
+    <div class="archive-summary">
+      <p><strong>{notes.length}</strong> 篇公开笔记</p>
+      <div class="archive-tags" aria-label="当前标签">
+        {tags.map((tag) => <span>{tag}</span>)}
+      </div>
+    </div>
+
+    <div class="notes-list">
+      {notes.map(({ id, data }) => (
+        <a class="note-list-row" href={contentPath("notes", id)}>
+          <div class="note-list-meta">
+            <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+            <span>{data.category}</span>
+          </div>
+          <div class="note-list-copy">
+            <h2>{data.cardTitle ?? data.title}</h2>
+            <p>{data.description}</p>
+            <div class="tag-row">
+              {data.tags.map((tag) => <span class="tag">{tag}</span>)}
+            </div>
+          </div>
+          <ArrowUpRight class="note-list-arrow" size={18} aria-hidden="true" />
+        </a>
       ))}
     </div>
   </section>

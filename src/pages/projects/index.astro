@@ -1,0 +1,39 @@
+---
+import { getCollection } from "astro:content";
+import { ArrowUpRight } from "lucide-astro";
+import PageIntro from "../../components/PageIntro.astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { byOrderThenDate, contentPath, isPublished } from "../../lib/content";
+
+const projects = (await getCollection("projects", isPublished)).sort(byOrderThenDate);
+---
+
+<SiteLayout title="项目" description="BiumBiu 的项目与持续构建中的工作。">
+  <PageIntro eyebrow="Selected work" title="项目" description="这里记录已经交付的结果，也保留仍在形成中的系统。每个项目都说明问题、约束、过程与取舍。" />
+
+  <section class="content-section shell">
+    <div class="archive-summary">
+      <p><strong>{projects.length}</strong> 个项目档案</p>
+      <p>按当前关注与完成时间排序</p>
+    </div>
+
+    <div class="project-archive">
+      {projects.map(({ id, data }) => (
+        <a class="project-feature" href={contentPath("projects", id)}>
+          <div class:list={["project-image", { "project-image-contain": data.containImage, "project-image-dark": data.darkImage }]}>
+            <img src={data.image} alt={data.imageAlt} width="1400" height="900" loading="lazy" />
+          </div>
+          <div class="project-copy">
+            <p class="eyebrow">{data.period} · {data.role}</p>
+            <h2>{data.cardTitle ?? data.title}</h2>
+            <p>{data.description}</p>
+            <div class="tag-row">
+              {data.tags.map((tag) => <span class="tag">{tag}</span>)}
+            </div>
+            <span class="project-detail-link">查看项目详情 <ArrowUpRight size={15} aria-hidden="true" /></span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</SiteLayout>
