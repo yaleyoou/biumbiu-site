@@ -29,7 +29,7 @@ API 协议、测试长上下文和并发，并确认 speculative decoding 真的
 最终，我在 4 张 A100-SXM4-80GB 上成功运行了 DeepSeek-V4-Flash-0731，服务由
 SGLang v0.5.16 提供 OpenAI Chat Completions、Responses 和 Anthropic Messages
 兼容接口。基础生成、流式输出、多轮对话、函数工具调用、8K/32K 上下文以及并发
-1/4/8 均完成验证。
+1/4/8 均完成验证，另外用官方 ShareGPT 数据做了两轮在线 request-rate sweep。
 
 这篇笔记记录完整过程，也记录为了让 DeepSeek V4 在 A100 SM80 上运行，我所采用
 和适配的运行时改动。
@@ -76,6 +76,7 @@ DSpark 部署链路的迁移与回归。
 | 外部 HTTPS 代理 | 12/12 passed |
 | 长上下文 Chat API | 8,214 和 32,790 prompt tokens passed |
 | 官方 server benchmark | 8K/32K 精确输入，50/50 请求成功 |
+| ShareGPT 在线 benchmark | 0.5/1/2/3 req/s，两轮 800/800 请求成功 |
 | 并发性能 | concurrency 1/4/8，五轮固定长度测试完成 |
 
 DSpark 模式启动后，每张卡约剩余 27.43GB，SGLang 计算出的
@@ -776,11 +777,124 @@ python -m sglang.benchmark.serving \
 15 个正式轮次共完成 560 个请求、573,440 input tokens 和 71,680 output tokens；
 全部请求成功，并且每个请求都准确生成 128 tokens。
 
-这是一组固定 shape、无限到达率下的合成饱和吞吐测试。面向生产容量规划时，还需要
-继续使用 ShareGPT 或真实请求 trace，以有限 request rate 测量排队后的 P95/P99
-延迟和服务等级目标，不能只看这里的峰值吞吐。
+这是一组固定 shape、无限到达率下的合成饱和吞吐测试，回答的是“把请求持续灌满
+时能处理多少 token”。它不能单独回答真实流量下的用户延迟，因此还需要下面的
+ShareGPT open-loop 测试。
 
-### 13.3 8K/32K 长上下文 benchmark
+### 13.3 ShareGPT 在线 open-loop benchmark
+
+在线延迟测试继续使用同一个 SGLang 官方工具，数据改为其默认的
+[ShareGPT_V3_unfiltered_cleaned_split.json](https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered)。
+本文锁定的 v0.5.16 实现会保留每条样本最前面的 user/assistant 两个 turn，将 user
+内容作为 prompt，并以 assistant 内容的 token 数作为目标输出长度。有限
+`--request-rate` 使用指数分布生成请求
+间隔，即 Poisson 到达，而不是“上一批完成后再补请求”的固定并发闭环。
+
+SGLang v0.5.16 自己的
+[`test_online_latency_default`](https://github.com/sgl-project/sglang/blob/fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1/test/registered/perf/test_bench_serving_1gpu_part1.py#L124-L144)
+也是 100 个请求、`request_rate=1`。本文保留这个官方在线延迟点，再向两侧扩展为
+0.5/1/2/3 req/s 的 rate sweep，以观察吞吐和排队延迟的拐点。
+
+本次从数据集中固定抽取 seed=42 的 100 条请求，限制 prompt + output 不超过 32K，
+不覆盖 ShareGPT 原生输出长度。每个 QPS 档位预热 8 条请求、清空 Radix Cache 后
+正式跑 100 条，完整 sweep 重复两轮。未设置 `--max-concurrency`，避免客户端限流
+掩盖服务过载；流式输出和默认 `ignore_eos=true` 保持开启，使每条请求生成到数据集
+给定长度。
+
+这 100 条请求的 token 分布为：
+
+| 长度 | mean | P50 | P95 | max |
+| --- | ---: | ---: | ---: | ---: |
+| prompt tokens | 350.84 | 158 | 1,329.10 | 3,588 |
+| output tokens | 236.76 | 173 | 688.70 | 821 |
+| prompt + output | 587.60 | 415.50 | 1,855.95 | 3,681 |
+
+官方脚本可以自动下载数据集，因此复现时不需要把本机 Hugging Face cache 路径写进
+命令。单轮 sweep 如下；再执行一遍即可得到本文的两轮结果：
+
+```bash
+export OPENAI_API_KEY="$(< secrets/sglang_api_key)"
+export HF_HOME=/path/to/huggingface-cache
+export PYTHONPATH=/path/to/sglang/python
+MODEL_PATH=/path/to/DeepSeek-V4-Flash-0731-MoE-MXFP4-BF16
+
+for RATE in 0.5 1 2 3; do
+  python -m sglang.benchmark.serving \
+    --backend sglang \
+    --base-url http://127.0.0.1:30000 \
+    --model "$MODEL_PATH" \
+    --served-model-name deepseek-v4-flash-0731 \
+    --tokenizer "$MODEL_PATH" \
+    --dataset-name sharegpt \
+    --sharegpt-context-len 32768 \
+    --num-prompts 100 \
+    --request-rate "$RATE" \
+    --temperature 0 \
+    --warmup-requests 8 \
+    --flush-cache \
+    --disable-tqdm \
+    --seed 42 \
+    --output-details \
+    --output-file test-results/bench-serving-sharegpt-online-dspark.jsonl
+done
+```
+
+两轮在每个档位共完成 200 条请求。吞吐按两轮总 token / 总测试时间聚合，平均并发
+也按测试时间加权；两轮输出吞吐范围单独列出，以免隐藏运行波动：
+
+| 到达率 | 完成速率 | 输出吞吐 | 两轮输出吞吐范围 | 平均并发 |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.5 req/s | 0.538 req/s | 127.46 tok/s | 127.45-127.47 tok/s | 1.62 |
+| 1 req/s | 1.040 req/s | 246.17 tok/s | 246.00-246.35 tok/s | 3.45 |
+| 2 req/s | 1.948 req/s | 461.12 tok/s | 458.09-464.20 tok/s | 12.59 |
+| 3 req/s | 2.438 req/s | 577.14 tok/s | 556.34-599.55 tok/s | 27.28 |
+
+这里的到达率是 Poisson 分布参数，完成速率是有限样本下的完成请求数 / 整段测试
+时间；两者不会严格相等。尤其 3 req/s 档还包含最后一批积压请求的排空时间。
+
+下面的百分位不是“两个 P95/P99 再平均”，而是从 `--output-details` 保存的逐请求
+TTFT 和逐 token ITL 重建 E2E/TPOT，并合并两轮样本后重新计算。重建值与脚本的
+单轮 E2E 百分位差异小于 0.1ms。每个档位包含 200 个请求和 47,352 个输出 tokens：
+
+| 到达率 | P50 E2E | P50 TTFT | P50 TPOT | P50 ITL |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.5 req/s | 2,671.32ms | 437.60ms | 8.87ms | 4.67ms |
+| 1 req/s | 2,626.32ms | 300.93ms | 11.78ms | 5.64ms |
+| 2 req/s | 5,160.67ms | 425.06ms | 24.59ms | 8.95ms |
+| 3 req/s | 9,407.33ms | 1,329.49ms | 43.75ms | 13.28ms |
+
+| 到达率 | P95 / P99 E2E | P95 / P99 TTFT | P95 / P99 TPOT | P95 / P99 ITL |
+| ---: | ---: | ---: | ---: | ---: |
+| 0.5 req/s | 6,999.13 / 10,491.64ms | 2,191.47 / 3,124.93ms | 31.92 / 131.09ms | 22.51 / 51.28ms |
+| 1 req/s | 8,451.42 / 12,659.81ms | 2,241.13 / 3,049.49ms | 30.27 / 114.16ms | 30.33 / 73.47ms |
+| 2 req/s | 16,636.36 / 23,882.79ms | 2,684.88 / 2,920.10ms | 112.51 / 233.09ms | 54.59 / 236.72ms |
+| 3 req/s | 28,479.37 / 34,387.38ms | 3,207.61 / 3,462.48ms | 216.19 / 387.90ms | 130.52 / 559.35ms |
+
+指标口径如下：
+
+- TTFT 是从客户端发出请求到收到第一个非空流式 token 的时间，包含排队和
+  prefill。如果把首个有效流式数据包称为 TTFP，那么它在这里对应同一个观测点；
+  SGLang 官方输出的指标名仍是 TTFT。
+- TPOT 是单个请求扣除首 token 后，每个输出 token 的平均耗时。
+- ITL 是相邻输出 token 的流式到达间隔。DSpark 一次 stream chunk 可能接受多个
+  token，SGLang 官方 native benchmark 会用该 chunk 的时间间隔除以新增 token 数，
+  再展开成逐 token ITL。
+
+结果显示，增加请求率会提高连续批处理利用率，所以输出吞吐从 127.46 tok/s 提升到
+577.14 tok/s；但这不代表单个用户更快。到达率从 1 增加到 2 req/s 后，P50 TPOT
+从 11.78ms 增至 24.59ms，P95 E2E 从 8.45s 增至 16.64s。3 req/s 时到达率已经
+高于服务对这组 ShareGPT 长度分布的持续完成能力，完成速率只有 2.438 req/s，平均
+并发升到 27.28，P95 E2E 达 28.48s。若以延迟而不是峰值吞吐为目标，这套硬件和
+模型配置更适合把持续流量控制在 1 req/s 左右，并结合业务 SLO 再做更细的 1-2
+req/s 区间扫描。
+
+两轮间也存在明显波动。例如 0.5 req/s 的单轮 median TTFT 分别为 1,041.09ms 和
+238.54ms，3 req/s 的单轮输出吞吐分别为 556.34 和 599.55 tok/s。因此本文保留
+轮间范围并使用 pooled 百分位，不把某一轮最好成绩当作稳定性能。以上在线指标针对
+SGLang native `/generate`；Chat/Responses 的协议功能由前面的 API 回归覆盖，若要
+评估生产网关，还应在真实 HTTPS 路径上重复相同 workload。
+
+### 13.4 8K/32K 长上下文 benchmark
 
 长上下文继续使用相同官方工具，固定 concurrency 1、每轮 5 个请求、每个请求输出
 128 tokens，各做五轮。以 32K 为例：
@@ -827,7 +941,7 @@ python -m sglang.benchmark.serving \
 输入长度和输出长度全部与设定一致。8K 结果的轮间波动较明显，因此这里报告中位数
 和范围，而不是挑最好的一轮；32K 的 median E2E 轮间 CV 为 6.24%。
 
-### 13.4 如何看待旧数据
+### 13.5 如何看待旧数据
 
 旧并发脚本使用很短的 Chat prompt，默认每个并发档位只发送一批请求，整个测试只做
 一次公共 warmup，也没有每轮清缓存。因此原来的 119.99 / 152.73 / 358.89 tok/s
@@ -982,6 +1096,7 @@ Monkeypatch 的优点是改动边界清晰，不污染 SGLang 源码；代价是
 - [ ] Chat、Responses、Anthropic、stream 和 tool loop 通过。
 - [ ] 未鉴权请求返回 401。
 - [ ] 8K/32K context 和并发 1/4/8 通过。
+- [ ] ShareGPT open-loop rate sweep 的成功率和 TTFT/TPOT/ITL 符合目标 SLO。
 - [ ] DSpark accept rate 明显大于 0。
 - [ ] 日志没有明文 key、missing weight、CUDA 或 NCCL traceback。
 
@@ -1019,5 +1134,6 @@ Core，KV/indexer 和稀疏注意力分别使用 A100 兼容实现，再通过�
 - [A100 patch 参考项目：Qeeweew/deepseek-v4-a100-sglang](https://github.com/Qeeweew/deepseek-v4-a100-sglang)
 - [DeepSeek-V4-Flash-0731 官方模型卡](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731)
 - [SGLang 官方仓库](https://github.com/sgl-project/sglang)
+- [SGLang 官方 ShareGPT benchmark 数据](https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered)
 - [本文锁定的 SGLang v0.5.16 commit](https://github.com/sgl-project/sglang/commit/fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1)
 - [参考项目锁定的旧 SGLang commit](https://github.com/sgl-project/sglang/commit/1c0019da7579db73223195f25b0eed3882dff24e)
