@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import ContentHeader from "../../components/ContentHeader.astro";
+import TableOfContents from "../../components/TableOfContents.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { isPublished } from "../../lib/content";
 
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 
 <SiteLayout
@@ -30,7 +31,10 @@ const { Content } = await render(entry);
   modifiedTime={entry.data.updated ?? entry.data.date}
 >
   <ContentHeader collection="notes" displayTitle={entry.data.cardTitle} {...entry.data} />
-  <article class="prose content-article note-article">
-    <Content />
-  </article>
+  <div class="content-reading-layout note-reading-layout">
+    <TableOfContents headings={headings} />
+    <article class="prose content-article note-article" data-toc-article>
+      <Content />
+    </article>
+  </div>
 </SiteLayout>

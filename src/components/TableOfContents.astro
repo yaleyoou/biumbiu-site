@@ -1,0 +1,127 @@
+---
+import type { MarkdownHeading } from "astro";
+import { ChevronDown, ListTree } from "lucide-astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+  label?: string;
+  maxDepth?: 2 | 3;
+}
+
+const { headings, label = "本文目录", maxDepth = 3 } = Astro.props;
+const items = headings.filter(({ depth }) => depth >= 2 && depth <= maxDepth);
+---
+
+{items.length > 0 && (
+  <>
+    <aside class="content-toc" aria-label={label}>
+      <div class="content-toc-heading">
+        <ListTree size={15} strokeWidth={1.8} aria-hidden="true" />
+        <span>{label}</span>
+        <span class="content-toc-count">{items.length}</span>
+      </div>
+      <nav class="content-toc-viewport" data-toc-viewport>
+        <ol class="content-toc-list">
+          {items.map((heading) => (
+            <li class:list={[`content-toc-depth-${heading.depth}`]}>
+              <a href={`#${heading.slug}`} data-toc-link={heading.slug}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </aside>
+
+    <details class="content-toc-mobile" data-toc-mobile>
+      <summary>
+        <span class="content-toc-heading">
+          <ListTree size={15} strokeWidth={1.8} aria-hidden="true" />
+          <span>{label}</span>
+          <span class="content-toc-count">{items.length}</span>
+        </span>
+        <ChevronDown class="content-toc-chevron" size={17} strokeWidth={1.8} aria-hidden="true" />
+      </summary>
+      <nav class="content-toc-mobile-viewport" data-toc-viewport aria-label={label}>
+        <ol class="content-toc-list">
+          {items.map((heading) => (
+            <li class:list={[`content-toc-depth-${heading.depth}`]}>
+              <a href={`#${heading.slug}`} data-toc-link={heading.slug}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  </>
+)}
+
+<script>
+  const article = document.querySelector<HTMLElement>("[data-toc-article]");
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]"));
+  const linkedIds = new Set(links.map((link) => link.dataset.tocLink));
+  const headings = Array.from(article?.querySelectorAll<HTMLElement>("h2[id], h3[id]") ?? [])
+    .filter((heading) => linkedIds.has(heading.id));
+  let activeId = "";
+  let ticking = false;
+
+  const keepLinkVisible = (link: HTMLAnchorElement) => {
+    const viewport = link.closest<HTMLElement>("[data-toc-viewport]");
+    if (!viewport || viewport.scrollHeight <= viewport.clientHeight) return;
+
+    const linkTop = link.offsetTop;
+    const linkBottom = linkTop + link.offsetHeight;
+    const viewportTop = viewport.scrollTop;
+    const viewportBottom = viewportTop + viewport.clientHeight;
+
+    if (linkTop < viewportTop + 12) {
+      viewport.scrollTo({ top: Math.max(0, linkTop - 12), behavior: "smooth" });
+    } else if (linkBottom > viewportBottom - 12) {
+      viewport.scrollTo({ top: linkBottom - viewport.clientHeight + 12, behavior: "smooth" });
+    }
+  };
+
+  const setActive = (id: string) => {
+    if (!id || id === activeId) return;
+    activeId = id;
+
+    links.forEach((link) => {
+      const isActive = link.dataset.tocLink === id;
+      link.classList.toggle("active", isActive);
+      if (isActive) {
+        link.setAttribute("aria-current", "location");
+        keepLinkVisible(link);
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  };
+
+  const updateActiveHeading = () => {
+    ticking = false;
+    const readingLine = window.scrollY + 132;
+    let current = headings[0];
+
+    for (const heading of headings) {
+      if (heading.offsetTop > readingLine) break;
+      current = heading;
+    }
+
+    if (current) setActive(current.id);
+  };
+
+  const requestUpdate = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateActiveHeading);
+  };
+
+  links.forEach((link) => {
+    link.addEventListener("click", () => {
+      const id = link.dataset.tocLink;
+      if (id) setActive(id);
+      link.closest<HTMLDetailsElement>("[data-toc-mobile]")?.removeAttribute("open");
+    });
+  });
+
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+  updateActiveHeading();
+</script>
