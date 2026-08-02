@@ -74,21 +74,24 @@ DSpark 部署链路的迁移与回归。
 | 基础模式 API 回归 | 12/12 passed |
 | DSpark API 回归 | 12/12 passed |
 | 外部 HTTPS 代理 | 12/12 passed |
-| 长上下文 | 8,214 和 32,790 prompt tokens passed |
-| 并发测试 | concurrency 1/4/8 passed |
+| 长上下文 Chat API | 8,214 和 32,790 prompt tokens passed |
+| 官方 server benchmark | 8K/32K 精确输入，50/50 请求成功 |
+| 并发性能 | concurrency 1/4/8，五轮固定长度测试完成 |
 
 DSpark 模式启动后，每张卡约剩余 27.43GB，SGLang 计算出的
 `max_total_num_tokens=412416`，最大运行请求数为 48。
 
-固定每个请求生成 128 token 时，实测聚合输出吞吐为：
+使用 SGLang 官方 serving benchmark，固定每个请求输入 1,024 tokens、生成 128
+tokens，预热并清空 Radix Cache 后做五轮测试，聚合输出吞吐的中位数为：
 
-| 并发 | 输出吞吐 |
-| ---: | ---: |
-| 1 | 119.99 tok/s |
-| 4 | 152.73 tok/s |
-| 8 | 358.89 tok/s |
+| 并发 | 五轮中位输出吞吐 | 五轮范围 |
+| ---: | ---: | ---: |
+| 1 | 107.01 tok/s | 106.98-115.17 tok/s |
+| 4 | 237.01 tok/s | 208.11-245.05 tok/s |
+| 8 | 314.54 tok/s | 306.01-328.41 tok/s |
 
-这些数字只代表这台机器和这套参数，不应直接当成跨机器通用 benchmark。
+这些是固定合成输入下的模型服务核心性能，不包含 Chat 模板和客户端 tokenization，
+也不等同于真实业务流量。详细口径和每轮数据见第十三节。
 
 ## 二、这次部署真正困难在哪里
 
@@ -671,36 +674,172 @@ constraint 同时使用。因此 DSpark 支持普通文本、stream、多轮和
 `auto/required/none`，不接受指定函数的对象。需要 named function choice 时，可以
 改用 Chat Completions。
 
-## 十三、长上下文和并发测试
+## 十三、长上下文和并发性能实测
 
-长上下文：
+### 13.1 先区分功能验证和性能压测
+
+仓库中的 `long_context_api.py` 走带鉴权的 OpenAI Chat Completions，用来确认长
+上下文请求能完成、usage 计数正确且模型返回指定文本：
 
 ```bash
 python scripts/long_context_api.py \
+  --base-url http://127.0.0.1:30000 \
   --api-key-file secrets/sglang_api_key \
   --target-prompt-tokens 8192,32768 \
-  --output test-results/long-context.json
+  --max-tokens 32 \
+  --output test-results/long-context-chat-api.json
 ```
 
-实测结果：
+本次重新实测结果如下：
 
-| 目标 prompt tokens | 实际 tokens | 耗时 | 结果 |
-| ---: | ---: | ---: | --- |
-| 8,192 | 8,214 | 4.734s | PASS |
-| 32,768 | 32,790 | 7.285s | PASS |
+| 目标 prompt tokens | Chat 实际 tokens | completion tokens | 单次耗时 | 结果 |
+| ---: | ---: | ---: | ---: | --- |
+| 8,192 | 8,214 | 6 | 1.533s | PASS |
+| 32,768 | 32,790 | 6 | 2.994s | PASS |
 
-并发 API benchmark：
+这里多出的 22 tokens 来自 system/user 消息包装。这个脚本使用重复文本构造输入，
+两个请求顺序执行，第二个请求还可能命中第一个请求留下的公共前缀；同时模型只生成
+6 tokens 就遇到 EOS。因此这张表只说明 Chat API 功能通过，单次耗时不能作为长
+上下文性能结论。
+
+### 13.2 使用 SGLang 官方 serving benchmark
+
+性能测试改用 SGLang v0.5.16 自带的
+[`sglang.benchmark.serving`](https://github.com/sgl-project/sglang/blob/fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1/python/sglang/benchmark/serving.py)。
+它直接请求 SGLang native `/generate` 接口，并同时给出输出吞吐、E2E latency、TTFT、
+TPOT 和 speculative accept length。旧入口 `python -m sglang.bench_serving` 在这个
+版本中已经提示 deprecated。
+
+正式测量前我做了以下控制：
+
+- 使用 `scripts/launch_dsv4_flash_0731_tp4_dspark.sh` 启动，确认日志出现
+  `Initialized DSpark draft runner`，并等待 target/draft CUDA Graph 和服务内建
+  warmup 全部完成。
+- 预热完成后确认四张 A100 利用率回到 0%，温度约 30-37 摄氏度，再开始记录。
+- 本次调度容器有 cpuset 限制，启动时额外设置了 `SGLANG_SET_CPU_AFFINITY=0`；
+  它只关闭 SGLang 自动 CPU 绑核，不改变模型、GPU 或 DSpark 参数。没有此限制的
+  完整主机可以保留启动脚本默认值。
+- 使用 `random-ids`、`--tokenize-prompt` 和 `--random-range-ratio 1.0` 精确控制
+  输入/输出长度；工具默认发送 `ignore_eos=true`，保证每个请求生成满 128 tokens。
+- 每轮先按目标并发预热，再用 `--flush-cache` 清空 Radix Cache；固定 seed，并交错
+  concurrency 1/4/8 的测试顺序，减少缓存、温升和先后顺序偏差。
+- concurrency 1 使用 16 请求/轮，concurrency 4 和 8 分别使用 32 和 64 请求/轮，
+  保证每个档位都有多个满批次；每个档位正式测五轮。
+
+单个并发档位的复现命令如下，修改 `CONCURRENCY` 和 `NUM_PROMPTS` 后重复五轮：
 
 ```bash
-python scripts/benchmark_api.py \
-  --api-key-file secrets/sglang_api_key \
-  --concurrency 1,4,8 \
-  --max-tokens 128 \
-  --warmup \
-  --output test-results/api-benchmark.json
+export OPENAI_API_KEY="$(< secrets/sglang_api_key)"
+MODEL_PATH=/path/to/DeepSeek-V4-Flash-0731-MoE-MXFP4-BF16
+CONCURRENCY=8
+NUM_PROMPTS=64
+
+PYTHONPATH=/path/to/sglang/python \
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --base-url http://127.0.0.1:30000 \
+  --model "$MODEL_PATH" \
+  --served-model-name deepseek-v4-flash-0731 \
+  --tokenizer "$MODEL_PATH" \
+  --dataset-name random-ids \
+  --num-prompts "$NUM_PROMPTS" \
+  --random-input-len 1024 \
+  --random-output-len 128 \
+  --random-range-ratio 1.0 \
+  --tokenize-prompt \
+  --request-rate inf \
+  --max-concurrency "$CONCURRENCY" \
+  --temperature 0 \
+  --warmup-requests "$CONCURRENCY" \
+  --flush-cache \
+  --disable-tqdm \
+  --seed 20260803 \
+  --output-file test-results/bench-serving-dspark.jsonl
 ```
 
-我没有只检查请求是否返回 200，而是同时检查：
+固定 1,024 input tokens + 128 output tokens 的五轮结果为：
+
+| 并发 | 请求/轮 | 五轮输出吞吐（tok/s） | 中位数 | 范围 | CV（变异系数） |
+| ---: | ---: | --- | ---: | ---: | ---: |
+| 1 | 16 | 106.99 / 106.98 / 107.01 / 115.17 / 112.90 | 107.01 | 106.98-115.17 | 3.59% |
+| 4 | 32 | 208.11 / 237.01 / 245.05 / 221.40 / 242.39 | 237.01 | 208.11-245.05 | 6.78% |
+| 8 | 64 | 319.90 / 308.06 / 328.41 / 306.01 / 314.54 | 314.54 | 306.01-328.41 | 2.89% |
+
+辅助指标同样取五轮中位数：
+
+| 并发 | median TTFT | median TPOT | DSpark average accept length |
+| ---: | ---: | ---: | ---: |
+| 1 | 239.16ms | 7.48ms | 2.52 |
+| 4 | 252.61ms | 14.19ms | 2.51 |
+| 8 | 267.08ms | 23.40ms | 2.52 |
+
+15 个正式轮次共完成 560 个请求、573,440 input tokens 和 71,680 output tokens；
+全部请求成功，并且每个请求都准确生成 128 tokens。
+
+这是一组固定 shape、无限到达率下的合成饱和吞吐测试。面向生产容量规划时，还需要
+继续使用 ShareGPT 或真实请求 trace，以有限 request rate 测量排队后的 P95/P99
+延迟和服务等级目标，不能只看这里的峰值吞吐。
+
+### 13.3 8K/32K 长上下文 benchmark
+
+长上下文继续使用相同官方工具，固定 concurrency 1、每轮 5 个请求、每个请求输出
+128 tokens，各做五轮。以 32K 为例：
+
+```bash
+export OPENAI_API_KEY="$(< secrets/sglang_api_key)"
+MODEL_PATH=/path/to/DeepSeek-V4-Flash-0731-MoE-MXFP4-BF16
+INPUT_LEN=32768
+
+PYTHONPATH=/path/to/sglang/python \
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --base-url http://127.0.0.1:30000 \
+  --model "$MODEL_PATH" \
+  --served-model-name deepseek-v4-flash-0731 \
+  --tokenizer "$MODEL_PATH" \
+  --dataset-name random-ids \
+  --num-prompts 5 \
+  --random-input-len "$INPUT_LEN" \
+  --random-output-len 128 \
+  --random-range-ratio 1.0 \
+  --tokenize-prompt \
+  --request-rate inf \
+  --max-concurrency 1 \
+  --temperature 0 \
+  --warmup-requests 1 \
+  --flush-cache \
+  --disable-tqdm \
+  --seed 20260803 \
+  --output-file test-results/bench-serving-long-context-dspark.jsonl
+```
+
+| 目标 input tokens | 实际 input tokens | 正式请求 | 五轮 median E2E | 五轮范围 | median TTFT | 结果 |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 8,192 | 8,192 | 25 | 1.727s | 1.220-1.965s | 744.20ms | PASS |
+| 32,768 | 32,768 | 25 | 3.606s | 3.490-4.047s | 2,978.69ms | PASS |
+
+每轮的请求中位 E2E 分别为：
+
+- 8K：1.879 / 1.965 / 1.220 / 1.727 / 1.549 秒。
+- 32K：4.047 / 3.731 / 3.606 / 3.490 / 3.502 秒。
+
+10 个正式轮次共处理 1,024,000 input tokens 和 6,400 output tokens，50 个请求的
+输入长度和输出长度全部与设定一致。8K 结果的轮间波动较明显，因此这里报告中位数
+和范围，而不是挑最好的一轮；32K 的 median E2E 轮间 CV 为 6.24%。
+
+### 13.4 如何看待旧数据
+
+旧并发脚本使用很短的 Chat prompt，默认每个并发档位只发送一批请求，整个测试只做
+一次公共 warmup，也没有每轮清缓存。因此原来的 119.99 / 152.73 / 358.89 tok/s
+可以视为当时那一次请求的观测值，但不足以作为稳定 benchmark；尤其 concurrency 4
+明显低于新测试的五轮范围。新旧测试的 input 长度也不同，不能直接计算性能涨跌。
+
+同理，旧长上下文表中的 4.734s / 7.285s 不是“错误结果”，而是 Chat API、重复
+前缀、可提前 EOS 和单次计时共同得到的结果。本次同一功能脚本重跑为 1.533s /
+2.994s，进一步说明这种单次耗时不适合作为性能数字。博客中的正式性能结论以固定
+token shape、预热、清缓存和五轮中位数为准。
+
+性能之外，我也没有只检查请求是否返回 200，而是同时检查：
 
 - 输出 token 数是否达到预期。
 - 返回文本是否符合确定性断言。
