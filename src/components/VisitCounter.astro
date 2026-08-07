@@ -1,0 +1,102 @@
+---
+interface Props {
+  scope?: "page" | "total";
+  label?: string;
+}
+
+const { scope = "total", label = scope === "page" ? "阅读" : "访问" } = Astro.props;
+---
+
+<span
+  class="visit-counter"
+  data-visit-counter
+  data-scope={scope}
+  data-state="loading"
+  aria-live="polite"
+  aria-busy="true"
+>
+  <span>{label}</span>
+  <span data-visit-value>--</span>
+  <span>次</span>
+</span>
+
+<script>
+  interface ViewCounts {
+    page: number;
+    total: number;
+  }
+
+  interface ViewRequest {
+    path: string;
+    promise: Promise<ViewCounts>;
+  }
+
+  type VisitWindow = Window & {
+    __biumbiuViewRequest?: ViewRequest;
+  };
+
+  const isViewCounts = (value: unknown): value is ViewCounts => {
+    if (typeof value !== "object" || value === null) return false;
+
+    const counts = value as Record<string, unknown>;
+    return (
+      typeof counts.page === "number" &&
+      Number.isFinite(counts.page) &&
+      typeof counts.total === "number" &&
+      Number.isFinite(counts.total)
+    );
+  };
+
+  const requestViewCounts = async (path: string): Promise<ViewCounts> => {
+    const response = await fetch("/api/views", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path })
+    });
+    const payload: unknown = await response.json();
+
+    if (!response.ok || !isViewCounts(payload)) {
+      throw new Error("Unable to load view counts");
+    }
+
+    return payload;
+  };
+
+  const counters = document.querySelectorAll<HTMLElement>("[data-visit-counter]");
+
+  if (counters.length > 0) {
+    const currentPath = window.location.pathname;
+    const visitWindow = window as VisitWindow;
+    let viewRequest = visitWindow.__biumbiuViewRequest;
+
+    if (!viewRequest || viewRequest.path !== currentPath) {
+      viewRequest = {
+        path: currentPath,
+        promise: requestViewCounts(currentPath)
+      };
+      visitWindow.__biumbiuViewRequest = viewRequest;
+    }
+
+    void viewRequest.promise
+      .then((counts) => {
+        if (window.location.pathname !== currentPath) return;
+
+        const formatter = new Intl.NumberFormat("zh-CN");
+        counters.forEach((counter) => {
+          const value = counter.dataset.scope === "page" ? counts.page : counts.total;
+          const valueElement = counter.querySelector<HTMLElement>("[data-visit-value]");
+
+          if (valueElement) valueElement.textContent = formatter.format(value);
+          counter.dataset.state = "ready";
+          counter.setAttribute("aria-busy", "false");
+        });
+      })
+      .catch(() => {
+        counters.forEach((counter) => {
+          counter.dataset.state = "error";
+          counter.setAttribute("aria-busy", "false");
+        });
+      });
+  }
+</script>

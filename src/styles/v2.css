@@ -391,6 +391,18 @@ button, input, textarea { font: inherit; }
 }
 .portfolio-footer { padding-top: 4px; color: var(--muted); font-family: var(--mono); font-size: 10px; }
 .portfolio-footer p { margin: 5px 0; }
+.visit-counter {
+  min-width: 8em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.visit-counter[data-state="loading"],
+.visit-counter[data-state="error"] { visibility: hidden; }
 
 /* Internal pages */
 .site-header {

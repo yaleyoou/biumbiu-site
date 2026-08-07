@@ -2,6 +2,7 @@
 import { ArrowUpRight, BookOpen, Github, Mail } from "lucide-astro";
 import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import VisitCounter from "../components/VisitCounter.astro";
 import { byNewest, byOrderThenDate, contentPath, formatDate, isPublished } from "../lib/content";
 
 const focus = [
@@ -72,7 +73,7 @@ const notes = (await getCollection("notes", isPublished))
         </div>
 
         <div class="profile-socials" aria-label="外部链接">
-          <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub"><Github size={22} /></a>
+          <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub"><Github size={22} /></a>
           <a href="mailto:yaleyoou@gmail.com" aria-label="Email" title="Email"><Mail size={22} /></a>
           <a href="/notes/" aria-label="笔记" title="笔记"><BookOpen size={22} /></a>
         </div>
@@ -147,7 +148,7 @@ const notes = (await getCollection("notes", isPublished))
 
         <footer class="portfolio-footer">
           <!-- <p>以 Astro 构建，部署于 Cloudflare Pages。</p> -->
-          <p>© 2026 BiumBiu</p>
+          <p>© 2026 BiumBiu · <VisitCounter /></p>
         </footer>
       </div>
     </div>

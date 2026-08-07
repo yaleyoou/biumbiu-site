@@ -1,4 +1,6 @@
 ---
+import VisitCounter from "./VisitCounter.astro";
+
 const year = new Date().getFullYear();
 ---
 
@@ -9,10 +11,10 @@ const year = new Date().getFullYear();
       <p class="footer-note">建立、记录，然后继续。</p>
     </div>
     <div class="footer-links" aria-label="外部链接">
-      <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer">GitHub</a>
       <a href="mailto:yaleyoou@gmail.com">Email</a>
       <a href="/rss.xml">RSS</a>
     </div>
-    <p class="footer-meta">© {year} · BiumBiu</p>
+    <p class="footer-meta">© {year} · BiumBiu · <VisitCounter /></p>
   </div>
 </footer>

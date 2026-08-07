@@ -1,6 +1,9 @@
 # BiumBiu 网站使用手册
 
-BiumBiu 是一个使用 [Astro](https://astro.build/) 构建的静态个人网站，用于展示个人近况、项目经历和技术笔记。
+## 说明
+这是我的一个个人博客网站：https://www.biumbiu.com
+
+[BiumBiu](https://www.biumbiu.com) 是一个使用 [Astro](https://astro.build/) 构建的静态个人网站，用于展示个人近况、项目经历和技术笔记。
 
 项目和笔记全部使用 Markdown 编写，由 Astro Content Collections 完成字段校验、列表读取和详情页生成。日常新增内容不需要编写 `.astro` 页面，也不需要手动修改首页、项目列表或笔记列表。
 
@@ -19,6 +22,7 @@ BiumBiu 是一个使用 [Astro](https://astro.build/) 构建的静态个人网�
 - [草稿与发布机制](#草稿与发布机制)
 - [修改、改名和删除内容](#修改改名和删除内容)
 - [构建与发布](#构建与发布)
+- [访问量与 Cloudflare D1](#访问量与-cloudflare-d1)
 - [修改网站公共信息](#修改网站公共信息)
 - [发布前检查清单](#发布前检查清单)
 - [常见问题](#常见问题)
@@ -57,7 +61,7 @@ src/content/notes/*.md
 
 建议使用：
 
-- Node.js 20 LTS 或更新的 LTS 版本；
+- Node.js 22 LTS 或更新的 LTS 版本；
 - npm；
 - Git；
 - 一个现代浏览器。
@@ -120,6 +124,10 @@ npm run dev -- --host 0.0.0.0
 
 ```text
 biumbiu-site/
+├── functions/
+│   └── api/views.ts                    # Cloudflare Pages 访问量接口
+├── migrations/
+│   └── 0001_views.sql                  # D1 数据表迁移
 ├── public/
 │   ├── favicon.svg
 │   ├── robots.txt                      # 搜索引擎抓取与 sitemap 入口
@@ -779,6 +787,49 @@ git push
 - 封面和正文图片；
 - 桌面端和移动端；
 - 重要站内链接。
+
+## 访问量与 Cloudflare D1
+
+网站通过 Cloudflare Pages Function 和 D1 记录访问量：
+
+- 所有页面的页脚显示全站访问量；
+- 项目详情显示当前项目的浏览量；
+- 笔记详情显示当前笔记的阅读量；
+- 每次完整打开或刷新页面计为一次 PV，不代表独立访客人数。
+
+### 首次创建数据库
+
+安装依赖后登录 Cloudflare，并创建数据库：
+
+```bash
+npx wrangler login
+npx wrangler d1 create biumbiu-views
+```
+
+应用数据库表结构：
+
+```bash
+npx wrangler d1 execute biumbiu-views --remote --file=migrations/0001_views.sql
+```
+
+### 绑定 Pages 项目
+
+在 Cloudflare 控制台打开当前 Pages 项目，进入 `Settings` → `Bindings`，添加 D1 database binding：
+
+| 配置 | 值 |
+| --- | --- |
+| Variable name | `DB` |
+| D1 database | `biumbiu-views` |
+
+保存后重新部署。Preview 环境建议绑定单独的测试数据库，否则预览访问也会增加正式站点的计数。
+
+### 检查访问量接口
+
+```bash
+npm run check:functions
+```
+
+普通的 `npm run dev` 只启动 Astro，不会提供 D1 绑定，因此本地开发时计数器会自动隐藏。完成 D1 绑定后，应在 Cloudflare Preview 或正式部署中进行端到端检查。
 
 ## 修改网站公共信息
 

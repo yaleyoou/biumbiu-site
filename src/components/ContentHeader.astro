@@ -1,6 +1,7 @@
 ---
 import { ArrowLeft, CalendarDays } from "lucide-astro";
 import { formatDate } from "../lib/content";
+import VisitCounter from "./VisitCounter.astro";
 
 interface Props {
   collection: "projects" | "notes";
@@ -70,6 +71,7 @@ const facts = isProject
           <span><CalendarDays size={14} aria-hidden="true" /> {formatDate(date)}</span>
         )}
         {updated && <span>更新于 {formatDate(updated)}</span>}
+        <VisitCounter scope="page" label={isProject ? "浏览" : "阅读"} />
         <div class="tag-row" aria-label="标签">
           {tags.map((tag) => <span class="tag">{tag}</span>)}
         </div>
