@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const MODEL_URL = "/meselft.glb";
+const MODEL_URL = "/models/meselft.glb";
 
 function createContactShadow(size: THREE.Vector3) {
   const shadowCanvas = document.createElement("canvas");

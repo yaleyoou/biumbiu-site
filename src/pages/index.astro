@@ -57,7 +57,7 @@ const notes = (await getCollection("notes", isPublished))
 ---
 
 <SiteLayout portfolio>
-  <link slot="head" rel="preload" as="fetch" href="/meselft.glb" type="model/gltf-binary" crossorigin="anonymous" />
+  <link slot="head" rel="preload" as="fetch" href="/models/meselft.glb" type="model/gltf-binary" crossorigin="anonymous" />
   <link slot="head" rel="preload" as="image" href="/images/meselft-poster.webp" type="image/webp" fetchpriority="high" />
   <div class="portfolio-page" data-spotlight>
     <div class="portfolio-shell">
@@ -202,7 +202,7 @@ const notes = (await getCollection("notes", isPublished))
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const heroModel = document.querySelector<HTMLElement>("[data-hero-model]");
 
-    import("../scripts/hero-model")
+    import("../client/hero-model")
       .then(({ mountHeroModel }) => mountHeroModel(heroModel))
       .catch((error) => {
         if (heroModel) {
@@ -212,7 +212,7 @@ const notes = (await getCollection("notes", isPublished))
         console.error("Unable to load the hero model runtime.", error);
       });
 
-    import("../scripts/hero-signal")
+    import("../client/hero-signal")
       .then(({ mountHeroSignal }) => mountHeroSignal(heroSignal))
       .catch((error) => console.error("Unable to load the interactive signal field.", error));
 
