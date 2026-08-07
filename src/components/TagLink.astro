@@ -1,0 +1,21 @@
+---
+import { tagPath } from "../lib/content";
+
+interface Props {
+  tag: string;
+  class?: string;
+  current?: boolean;
+}
+
+const { tag, current = false } = Astro.props;
+const className = Astro.props.class ?? "tag";
+---
+
+<a
+  class={className}
+  href={tagPath(tag)}
+  aria-current={current ? "page" : undefined}
+  data-pagefind-filter="标签"
+>
+  {tag}
+</a>

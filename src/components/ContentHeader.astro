@@ -1,6 +1,8 @@
 ---
-import { ArrowLeft, CalendarDays } from "lucide-astro";
+import { ArrowLeft, CalendarDays, Clock3 } from "lucide-astro";
 import { formatDate } from "../lib/content";
+import { getPublicImageDimensions } from "../lib/images";
+import TagLink from "./TagLink.astro";
 import VisitCounter from "./VisitCounter.astro";
 
 interface Props {
@@ -20,6 +22,7 @@ interface Props {
   stack?: string;
   containImage?: boolean;
   darkImage?: boolean;
+  readingMinutes?: number;
 }
 
 const {
@@ -38,7 +41,8 @@ const {
   status,
   stack,
   containImage = false,
-  darkImage = false
+  darkImage = false,
+  readingMinutes
 } = Astro.props;
 
 const isProject = collection === "projects";
@@ -53,6 +57,7 @@ const facts = isProject
       ["Stack", stack]
     ].filter((fact): fact is [string, string] => Boolean(fact[1]))
   : [];
+const imageDimensions = await getPublicImageDimensions(image);
 ---
 
 <header class="content-hero shell reveal">
@@ -70,16 +75,24 @@ const facts = isProject
         {!isProject && (
           <span><CalendarDays size={14} aria-hidden="true" /> {formatDate(date)}</span>
         )}
+        {readingMinutes && <span><Clock3 size={14} aria-hidden="true" /> 约 {readingMinutes} 分钟</span>}
         {updated && <span>更新于 {formatDate(updated)}</span>}
         <VisitCounter scope="page" label={isProject ? "浏览" : "阅读"} />
         <div class="tag-row" aria-label="标签">
-          {tags.map((tag) => <span class="tag">{tag}</span>)}
+          {tags.map((tag) => <TagLink tag={tag} />)}
         </div>
       </div>
     </div>
 
     <div class:list={["content-cover", { "content-cover-contain": containImage, "content-cover-dark": darkImage }]}>
-      <img src={image} alt={imageAlt} width="1200" height="800" fetchpriority="high" />
+      <img
+        src={image}
+        alt={imageAlt}
+        width={imageDimensions?.width ?? 1200}
+        height={imageDimensions?.height ?? 800}
+        decoding="async"
+        fetchpriority="high"
+      />
     </div>
   </div>
 

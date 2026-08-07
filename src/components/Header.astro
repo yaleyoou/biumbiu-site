@@ -1,5 +1,5 @@
 ---
-import { Menu, X } from "lucide-astro";
+import { Menu, Search, X } from "lucide-astro";
 
 interface Props {
   currentPath: string;
@@ -9,12 +9,13 @@ const { currentPath } = Astro.props;
 const links = [
   { href: "/projects/", label: "项目" },
   { href: "/notes/", label: "笔记" },
+  { href: "/tags/", label: "标签" },
   { href: "/now/", label: "现在" },
   { href: "/#about", label: "关于" }
 ];
 ---
 
-<header class="site-header" data-header>
+<header class="site-header" data-header data-pagefind-ignore>
   <div class="header-inner">
     <a class="wordmark" href="/" aria-label="BiumBiu 首页">
       <span class="logo-mark" aria-hidden="true">B</span>
@@ -26,30 +27,53 @@ const links = [
           {link.label}
         </a>
       ))}
+      <a class:list={["header-search-link", { active: currentPath.startsWith("/search") }]} href="/search/" aria-label="搜索" title="搜索">
+        <Search size={18} strokeWidth={1.8} aria-hidden="true" />
+      </a>
     </nav>
 
-    <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false" data-menu-button>
+    <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="mobile-navigation" data-menu-button>
       <Menu class="menu-open-icon" size={22} strokeWidth={1.8} />
       <X class="menu-close-icon" size={22} strokeWidth={1.8} />
     </button>
   </div>
 
-  <nav class="mobile-nav" aria-label="移动端导航" data-mobile-nav>
+  <nav class="mobile-nav" id="mobile-navigation" aria-label="移动端导航" aria-hidden="true" data-mobile-nav>
     {links.map((link) => (
       <a class:list={["mobile-nav-link", { active: currentPath.startsWith(link.href) }]} href={link.href}>
         {link.label}
       </a>
     ))}
+    <a class:list={["mobile-nav-link", { active: currentPath.startsWith("/search") }]} href="/search/">
+      搜索
+    </a>
   </nav>
 </header>
 
 <script>
   const header = document.querySelector("[data-header]");
   const button = document.querySelector<HTMLButtonElement>("[data-menu-button]");
+  const navigation = document.querySelector<HTMLElement>("[data-mobile-nav]");
+
+  const setMenuOpen = (open: boolean, restoreFocus = false) => {
+    header?.classList.toggle("menu-visible", open);
+    button?.setAttribute("aria-expanded", String(open));
+    button?.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+    navigation?.setAttribute("aria-hidden", String(!open));
+    if (!open && restoreFocus) button?.focus();
+  };
 
   button?.addEventListener("click", () => {
-    const open = header?.classList.toggle("menu-visible") ?? false;
-    button.setAttribute("aria-expanded", String(open));
-    button.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
+    setMenuOpen(!header?.classList.contains("menu-visible"));
+  });
+
+  navigation?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setMenuOpen(false));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && header?.classList.contains("menu-visible")) {
+      setMenuOpen(false, true);
+    }
   });
 </script>

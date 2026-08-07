@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import { ArrowUpRight } from "lucide-astro";
 import PageIntro from "../../components/PageIntro.astro";
+import TagLink from "../../components/TagLink.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { byNewest, contentPath, formatDate, isPublished } from "../../lib/content";
 
@@ -16,26 +17,28 @@ const tags = [...new Set(notes.flatMap(({ data }) => data.tags))].sort((a, b) =>
     <div class="archive-summary">
       <p><strong>{notes.length}</strong> 篇公开笔记</p>
       <div class="archive-tags" aria-label="当前标签">
-        {tags.map((tag) => <span>{tag}</span>)}
+        {tags.map((tag) => <TagLink tag={tag} class="archive-tag" />)}
       </div>
     </div>
 
     <div class="notes-list">
       {notes.map(({ id, data }) => (
-        <a class="note-list-row" href={contentPath("notes", id)}>
+        <article class="note-list-row">
           <div class="note-list-meta">
             <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
             <span>{data.category}</span>
           </div>
           <div class="note-list-copy">
-            <h2>{data.cardTitle ?? data.title}</h2>
+            <h2><a href={contentPath("notes", id)}>{data.cardTitle ?? data.title}</a></h2>
             <p>{data.description}</p>
             <div class="tag-row">
-              {data.tags.map((tag) => <span class="tag">{tag}</span>)}
+              {data.tags.map((tag) => <TagLink tag={tag} />)}
             </div>
           </div>
-          <ArrowUpRight class="note-list-arrow" size={18} aria-hidden="true" />
-        </a>
+          <a class="note-list-arrow" href={contentPath("notes", id)} aria-label={`打开${data.title}`}>
+            <ArrowUpRight size={18} aria-hidden="true" />
+          </a>
+        </article>
       ))}
     </div>
   </section>

@@ -8,7 +8,7 @@ interface Props {
   maxDepth?: 2 | 3;
 }
 
-const { headings, label = "本文目录", maxDepth = 3 } = Astro.props;
+const { headings, label = "本文目录", maxDepth = 2 } = Astro.props;
 const items = headings.filter(({ depth }) => depth >= 2 && depth <= maxDepth);
 ---
 

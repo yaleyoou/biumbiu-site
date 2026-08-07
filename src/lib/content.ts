@@ -20,3 +20,47 @@ export const formatDate = (date: Date) => {
 
   return `${year}-${month}-${day}`;
 };
+
+export const estimateReadingMinutes = (markdown: string) => {
+  const text = markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*\]\([^)]*\)/g, " ");
+  const hanCharacters = text.match(/[\u3400-\u9fff]/g)?.length ?? 0;
+  const latinWords = text
+    .replace(/[\u3400-\u9fff]/g, " ")
+    .match(/[\p{L}\p{N}]+/gu)?.length ?? 0;
+
+  return Math.max(1, Math.ceil(hanCharacters / 450 + latinWords / 220));
+};
+
+export const tagSlug = (tag: string) => tag
+  .normalize("NFKC")
+  .trim()
+  .toLocaleLowerCase("zh-CN")
+  .replace(/&/g, " and ")
+  .replace(/\+/g, " plus ")
+  .replace(/#/g, " sharp ")
+  .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+  .replace(/^-+|-+$/g, "");
+
+export const tagPath = (tag: string) => `/tags/${tagSlug(tag)}/`;
+
+export const relatedEntries = <Entry extends Publishable>(
+  current: Entry,
+  entries: Entry[],
+  limit = 3
+) => {
+  const currentTags = new Set(current.data.tags.map((tag) => tag.toLocaleLowerCase("zh-CN")));
+
+  return entries
+    .filter((entry) => entry.id !== current.id)
+    .map((entry) => ({
+      entry,
+      sharedTags: entry.data.tags.filter((tag) => currentTags.has(tag.toLocaleLowerCase("zh-CN"))).length
+    }))
+    .sort((a, b) => b.sharedTags - a.sharedTags || b.entry.data.date.getTime() - a.entry.data.date.getTime())
+    .slice(0, limit)
+    .map(({ entry }) => entry);
+};

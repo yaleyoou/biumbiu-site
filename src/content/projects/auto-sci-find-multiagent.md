@@ -7,7 +7,7 @@ period: "2026.04 - 06"
 role: "Survey Pipeline"
 status: "Completed"
 stack: "Multi-Agent / AI4S"
-image: "/images/yxy-agent-blog-assets/research-agent-workflow.png"
+image: "/images/yxy-agent-blog-assets/research-agent-workflow-1400.webp"
 imageAlt: "自动化科研 Multi-Agent 工作流"
 tags: ["AI4S", "Multi-Agent", "SurveyAgent", "Research Automation"]
 featured: true
@@ -39,7 +39,7 @@ order: 2
 
 ## 整体架构：交接比角色数量重要
 
-![参赛阶段的自动化科研 Multi-Agent 工作流](/images/yxy-agent-blog-assets/research-agent-workflow.png)
+![参赛阶段的自动化科研 Multi-Agent 工作流](/images/yxy-agent-blog-assets/research-agent-workflow-1400.webp)
 
 ```text
 Research Seed
@@ -167,7 +167,7 @@ PaperReaderAgent 聚焦主干节点。每篇笔记不仅总结方法，还要回
 
 ## 从科研全闭环到文献调研专精版
 
-![当前 SurveyAgent 文献谱系工作流](/images/yxy-agent-blog-assets/survey-agent-flow.png)
+![当前 SurveyAgent 文献谱系工作流](/images/yxy-agent-blog-assets/survey-agent-flow-1600.webp)
 
 项目的演化大致经历了以下阶段：
 

@@ -1,0 +1,60 @@
+---
+import { getCollection } from "astro:content";
+import { ArrowUpRight } from "lucide-astro";
+import PageIntro from "../../components/PageIntro.astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { isPublished, tagPath, tagSlug } from "../../lib/content";
+
+const notes = await getCollection("notes", isPublished);
+const projects = await getCollection("projects", isPublished);
+const tagMap = new Map<string, { label: string; notes: number; projects: number }>();
+
+for (const entry of notes) {
+  for (const tag of entry.data.tags) {
+    const slug = tagSlug(tag);
+    const value = tagMap.get(slug) ?? { label: tag, notes: 0, projects: 0 };
+    value.notes += 1;
+    tagMap.set(slug, value);
+  }
+}
+
+for (const entry of projects) {
+  for (const tag of entry.data.tags) {
+    const slug = tagSlug(tag);
+    const value = tagMap.get(slug) ?? { label: tag, notes: 0, projects: 0 };
+    value.projects += 1;
+    tagMap.set(slug, value);
+  }
+}
+
+const tags = [...tagMap.values()].sort((a, b) =>
+  b.notes + b.projects - (a.notes + a.projects) || a.label.localeCompare(b.label, "zh-CN")
+);
+---
+
+<SiteLayout title="标签" description="按主题浏览 BiumBiu 的技术笔记与项目。">
+  <PageIntro eyebrow="Topics" title="标签" description="从技术、系统与实践主题进入笔记和项目。标签由内容自动汇总，每个主题都指向同一份公开档案。" />
+
+  <section class="content-section shell">
+    <div class="archive-summary">
+      <p><strong>{tags.length}</strong> 个主题</p>
+      <p>{notes.length + projects.length} 篇内容</p>
+    </div>
+
+    <ol class="tag-directory">
+      {tags.map((tag) => (
+        <li>
+          <a href={tagPath(tag.label)}>
+            <span class="tag-directory-name">{tag.label}</span>
+            <span class="tag-directory-count">
+              {tag.notes > 0 && `${tag.notes} 篇笔记`}
+              {tag.notes > 0 && tag.projects > 0 && " · "}
+              {tag.projects > 0 && `${tag.projects} 个项目`}
+            </span>
+            <ArrowUpRight size={17} strokeWidth={1.8} aria-hidden="true" />
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</SiteLayout>

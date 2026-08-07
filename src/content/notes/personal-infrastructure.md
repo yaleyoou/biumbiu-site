@@ -4,7 +4,7 @@ cardTitle: "从零搭建一个美国节点"
 description: "复盘从 Cloudflare DNS、美国 VPS、3x-ui 到 VLESS REALITY 节点、订阅和性能调优的完整过程。"
 date: 2026-07-30
 category: "Field note"
-image: "/images/project-network.webp"
+image: "/images/project-network-1200.webp"
 imageAlt: "服务器网络与终端连接场景"
 tags: ["Cloudflare", "VPS", "3x-ui", "Xray"]
 featured: true

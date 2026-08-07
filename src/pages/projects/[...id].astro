@@ -1,9 +1,11 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
+import ArticleTools from "../../components/ArticleTools.astro";
 import ContentHeader from "../../components/ContentHeader.astro";
+import ContentNavigation from "../../components/ContentNavigation.astro";
 import TableOfContents from "../../components/TableOfContents.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { byOrderThenDate, isPublished } from "../../lib/content";
+import { byOrderThenDate, contentPath, estimateReadingMinutes, isPublished, relatedEntries } from "../../lib/content";
 
 export async function getStaticPaths() {
   const projects = (await getCollection("projects", isPublished)).sort(byOrderThenDate);
@@ -20,21 +22,42 @@ interface Props {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+const readingMinutes = estimateReadingMinutes(entry.body ?? "");
+const projects = (await getCollection("projects", isPublished)).sort(byOrderThenDate);
+const currentIndex = projects.findIndex((project) => project.id === entry.id);
+const previousEntry = projects[currentIndex - 1];
+const nextEntry = projects[currentIndex + 1];
+const related = relatedEntries(entry, projects).map((project) => ({
+  href: contentPath("projects", project.id),
+  title: project.data.cardTitle ?? project.data.title,
+  meta: `${project.data.period} · ${project.data.role}`
+}));
 ---
 
 <SiteLayout
   title={entry.data.title}
   description={entry.data.description}
   image={entry.data.image}
+  imageAlt={entry.data.imageAlt}
   article
   publishedTime={entry.data.date}
   modifiedTime={entry.data.updated ?? entry.data.date}
+  tags={entry.data.tags}
 >
-  <ContentHeader collection="projects" displayTitle={entry.data.cardTitle} {...entry.data} />
+  <ContentHeader collection="projects" displayTitle={entry.data.cardTitle} readingMinutes={readingMinutes} {...entry.data} />
   <div class="content-reading-layout project-reading-layout">
     <TableOfContents headings={headings} label="项目目录" maxDepth={2} />
-    <article class="prose content-article project-article" data-toc-article>
+    <article class="prose content-article project-article" data-toc-article data-pagefind-body>
       <Content />
     </article>
+    <ContentNavigation
+      previous={previousEntry && { href: contentPath("projects", previousEntry.id), title: previousEntry.data.cardTitle ?? previousEntry.data.title }}
+      next={nextEntry && { href: contentPath("projects", nextEntry.id), title: nextEntry.data.cardTitle ?? nextEntry.data.title }}
+      related={related}
+      previousLabel="上一个项目"
+      nextLabel="下一个项目"
+      relatedLabel="相关项目"
+    />
   </div>
+  <ArticleTools />
 </SiteLayout>

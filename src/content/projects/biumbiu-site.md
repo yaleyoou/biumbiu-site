@@ -6,8 +6,8 @@ period: "2026 - Now"
 role: "Design & Development"
 status: "Maintained"
 stack: "Astro / Cloudflare"
-image: "/images/project-web.webp"
-imageAlt: "显示个人网站源码的开发工作区"
+image: "/images/biumbiu-site-cover.webp"
+imageAlt: "BiumBiu 个人网站首页的桌面端界面"
 tags: ["Astro", "TypeScript", "Content Collections", "Cloudflare Pages"]
 featured: false
 order: 4

@@ -1,0 +1,68 @@
+---
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-astro";
+
+export interface NavigationItem {
+  href: string;
+  title: string;
+  meta?: string;
+}
+
+interface Props {
+  previous?: NavigationItem;
+  next?: NavigationItem;
+  related?: NavigationItem[];
+  previousLabel?: string;
+  nextLabel?: string;
+  relatedLabel?: string;
+}
+
+const {
+  previous,
+  next,
+  related = [],
+  previousLabel = "上一篇",
+  nextLabel = "下一篇",
+  relatedLabel = "相关文章"
+} = Astro.props;
+---
+
+{(previous || next || related.length > 0) && (
+  <section class="content-end" aria-label="继续阅读" data-pagefind-ignore>
+    {(previous || next) && (
+      <nav class="content-adjacent" aria-label="上一篇与下一篇">
+        {previous && (
+          <a class="content-adjacent-link previous" href={previous.href}>
+            <ArrowLeft size={18} strokeWidth={1.8} aria-hidden="true" />
+            <span><small>{previousLabel}</small><strong>{previous.title}</strong></span>
+          </a>
+        )}
+        {next && (
+          <a class="content-adjacent-link next" href={next.href}>
+            <span><small>{nextLabel}</small><strong>{next.title}</strong></span>
+            <ArrowRight size={18} strokeWidth={1.8} aria-hidden="true" />
+          </a>
+        )}
+      </nav>
+    )}
+
+    {related.length > 0 && (
+      <div class="related-content">
+        <p class="related-content-label">{relatedLabel}</p>
+        <ol>
+          {related.map((item, index) => (
+            <li>
+              <a href={item.href}>
+                <span class="related-index">{String(index + 1).padStart(2, "0")}</span>
+                <span class="related-copy">
+                  <strong>{item.title}</strong>
+                  {item.meta && <small>{item.meta}</small>}
+                </span>
+                <ArrowUpRight size={17} strokeWidth={1.8} aria-hidden="true" />
+              </a>
+            </li>
+          ))}
+        </ol>
+      </div>
+    )}
+  </section>
+)}

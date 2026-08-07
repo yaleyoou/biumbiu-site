@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Kimi K3 inference stack architecture</title>
+  <desc id="desc">A four-stage inference system connecting NVIDIA B300, SGLang, data analysis, and a token relay.</desc>
+  <defs>
+    <pattern id="grid" width="56" height="56" patternUnits="userSpaceOnUse">
+      <path d="M56 0H0V56" fill="none" stroke="#294038" stroke-width="1" opacity="0.42"/>
+    </pattern>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9ff43"/>
+      <stop offset="1" stop-color="#73b89f"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="1000" fill="#0a100e"/>
+  <rect width="1400" height="1000" fill="url(#grid)"/>
+  <path d="M0 168H1400M0 824H1400" stroke="#567268" stroke-width="1" opacity="0.35"/>
+  <path d="M1090 0V1000" stroke="#ff7b68" stroke-width="2" opacity="0.34"/>
+
+  <g font-family="Manrope, Helvetica, sans-serif">
+    <text x="86" y="84" fill="#b9ff43" font-size="19" font-weight="700">INFERENCE SYSTEM / 01</text>
+    <text x="86" y="145" fill="#edf4ef" font-size="62" font-weight="700">KIMI K3</text>
+    <text x="1060" y="96" fill="#7d8f86" font-size="16" text-anchor="end">DEPLOYMENT</text>
+    <text x="1314" y="96" fill="#ff7b68" font-size="16" font-weight="700" text-anchor="end">ONGOING</text>
+
+    <g transform="translate(86 242)">
+      <path d="M114 150H338M452 150H676M790 150H1014" fill="none" stroke="url(#edge)" stroke-width="3"/>
+      <circle cx="114" cy="150" r="7" fill="#b9ff43" filter="url(#glow)"/>
+      <circle cx="452" cy="150" r="7" fill="#b9ff43" filter="url(#glow)"/>
+      <circle cx="790" cy="150" r="7" fill="#b9ff43" filter="url(#glow)"/>
+      <circle cx="1128" cy="150" r="7" fill="#ff7b68" filter="url(#glow)"/>
+
+      <g>
+        <text x="0" y="16" fill="#7d8f86" font-size="14" font-weight="700">COMPUTE</text>
+        <text x="0" y="76" fill="#edf4ef" font-size="35" font-weight="700">NVIDIA</text>
+        <text x="0" y="116" fill="#edf4ef" font-size="35" font-weight="700">B300</text>
+        <text x="0" y="208" fill="#aebcb5" font-size="17">ACCELERATOR</text>
+      </g>
+
+      <g transform="translate(338)">
+        <text x="0" y="16" fill="#7d8f86" font-size="14" font-weight="700">RUNTIME</text>
+        <text x="0" y="96" fill="#edf4ef" font-size="41" font-weight="700">SGLang</text>
+        <text x="0" y="208" fill="#aebcb5" font-size="17">INFERENCE ENGINE</text>
+      </g>
+
+      <g transform="translate(676)">
+        <text x="0" y="16" fill="#7d8f86" font-size="14" font-weight="700">OBSERVE</text>
+        <text x="0" y="76" fill="#edf4ef" font-size="35" font-weight="700">DATA &amp;</text>
+        <text x="0" y="116" fill="#edf4ef" font-size="35" font-weight="700">ANALYSIS</text>
+        <text x="0" y="208" fill="#aebcb5" font-size="17">MEASUREMENT</text>
+      </g>
+
+      <g transform="translate(1014)">
+        <text x="0" y="16" fill="#7d8f86" font-size="14" font-weight="700">ACCESS</text>
+        <text x="0" y="76" fill="#edf4ef" font-size="35" font-weight="700">TOKEN</text>
+        <text x="0" y="116" fill="#edf4ef" font-size="35" font-weight="700">RELAY</text>
+        <text x="0" y="208" fill="#aebcb5" font-size="17">EXTERNAL API</text>
+      </g>
+    </g>
+
+    <g transform="translate(86 652)">
+      <text x="0" y="0" fill="#7d8f86" font-size="14" font-weight="700">OPTIMIZATION LOOP</text>
+      <path d="M0 46H1218" stroke="#567268" stroke-width="1" opacity="0.62"/>
+      <g fill="#edf4ef" font-size="18" font-weight="650">
+        <text x="0" y="91">THROUGHPUT</text>
+        <text x="314" y="91">LATENCY</text>
+        <text x="558" y="91">MEMORY</text>
+        <text x="810" y="91">STABILITY</text>
+      </g>
+      <g fill="#b9ff43">
+        <rect x="0" y="112" width="214" height="4"/>
+        <rect x="314" y="112" width="144" height="4"/>
+        <rect x="558" y="112" width="152" height="4"/>
+        <rect x="810" y="112" width="408" height="4"/>
+      </g>
+    </g>
+
+    <text x="86" y="916" fill="#aebcb5" font-size="18">B300  -  SGLANG  -  MEASUREMENT  -  TOKEN GATEWAY</text>
+    <text x="1314" y="916" fill="#b9ff43" font-size="18" font-weight="700" text-anchor="end">BIUMBIU.COM</text>
+  </g>
+</svg>

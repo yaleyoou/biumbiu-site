@@ -1,7 +1,8 @@
 ---
-import { ArrowUpRight, BookOpen, Github, Mail } from "lucide-astro";
+import { ArrowUpRight, BookOpen, Github, Mail, Search } from "lucide-astro";
 import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import TagLink from "../components/TagLink.astro";
 import VisitCounter from "../components/VisitCounter.astro";
 import { byNewest, byOrderThenDate, contentPath, formatDate, isPublished } from "../lib/content";
 
@@ -76,16 +77,17 @@ const notes = (await getCollection("notes", isPublished))
           <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub"><Github size={22} /></a>
           <a href="mailto:yaleyoou@gmail.com" aria-label="Email" title="Email"><Mail size={22} /></a>
           <a href="/notes/" aria-label="笔记" title="笔记"><BookOpen size={22} /></a>
+          <a href="/search/" aria-label="搜索" title="搜索"><Search size={22} /></a>
         </div>
       </aside>
 
       <div class="portfolio-content">
         <section class="portfolio-section about-section" id="about" data-section="about">
           <h2 class="mobile-section-title">关于</h2>
-          <p>Hi there! I'm biumbiu, a master's student in Computer Technology at the University of Science and Technology of China (USTC). I'm curious about how intelligent systems work, and I enjoy turning new ideas into things I can build, test, and understand.</p>
-          <p>My current interests lie in large language model inference, AI infrastructure, and agents. I'm particularly interested in making AI systems faster, more efficient, and more capable of solving real-world problems. Whether I'm reading papers, experimenting with new tools, or working on a project, I enjoy the process of starting with an uncertain question and gradually making it clearer.</p>
-          <p>Outside of research, I play basketball, practice guitar, and take photos of moments I want to remember. When there's nothing in particular to do, I like going on long walks with friends and seeing where the conversation takes us. I'm always curious about unfamiliar ideas, technologies, and places.</p>
-          <p>This blog is where I document what I'm learning, building, and thinking about along the way. The notes here may not always contain definitive answers, but I hope they capture honest questions, useful discoveries, and a little bit of life beyond the screen.</p>
+          <p>你好，我是 BiumBiu，目前在中国科学技术大学攻读计算机技术硕士。我对智能系统如何工作保持好奇，也喜欢把新想法变成可以亲手构建、验证和理解的东西。</p>
+          <p>我现在主要关注大语言模型推理、AI Infra 与 Agent，尤其在意怎样让 AI 系统更快、更高效，也更有能力解决真实问题。无论是读论文、试用新工具还是推进项目，我都享受从一个不确定的问题出发，逐步把它弄清楚的过程。</p>
+          <p>研究之外，我会打篮球、练吉他，也会拍下想保留的瞬间。空闲时喜欢和朋友散步，让谈话自然地延伸。我始终愿意接近陌生的想法、技术和地方。</p>
+          <p>这个博客记录我一路上正在学习、构建和思考的内容。这里的笔记未必总有确定答案，但我希望它们能留下真实的问题、有用的发现，以及屏幕之外的一点生活。</p>
         </section>
 
         <section class="portfolio-section" id="focus" data-section="focus">
@@ -110,14 +112,14 @@ const notes = (await getCollection("notes", isPublished))
           <h2 class="mobile-section-title">项目</h2>
           <div class="row-group">
             {projects.map((project) => (
-              <a class="project-compact-row focus-row" href={project.href}>
-                <div class:list={["project-thumb", { "project-thumb-contain": project.contain, "project-thumb-dark": project.dark }]}><img src={project.image} alt="" width="320" height="180" loading="lazy" /></div>
+              <article class="project-compact-row focus-row">
+                <a class:list={["project-thumb", { "project-thumb-contain": project.contain, "project-thumb-dark": project.dark }]} href={project.href} aria-label={`查看${project.title}`}><img src={project.image} alt="" width="320" height="180" loading="lazy" decoding="async" /></a>
                 <div class="row-copy">
-                  <h3>{project.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
+                  <h3><a href={project.href}>{project.title} <ArrowUpRight size={15} aria-hidden="true" /></a></h3>
                   <p>{project.copy}</p>
-                  <div class="pill-list">{project.tags.map((tag) => <span>{tag}</span>)}</div>
+                  <div class="pill-list">{project.tags.map((tag) => <TagLink tag={tag} class="pill-link" />)}</div>
                 </div>
-              </a>
+              </article>
             ))}
           </div>
           <a class="archive-link" href="/projects/">查看完整项目档案 <span aria-hidden="true">→</span></a>
@@ -128,7 +130,7 @@ const notes = (await getCollection("notes", isPublished))
           <div class="row-group">
             {notes.map((note) => (
               <a class="writing-row focus-row" href={note.href}>
-                <div class="writing-thumb"><img src={note.image} alt="" width="320" height="180" loading="lazy" /></div>
+                <div class="writing-thumb"><img src={note.image} alt="" width="320" height="180" loading="lazy" decoding="async" /></div>
                 <div class="row-copy">
                   <p class="row-date">{note.date}</p>
                   <h3>{note.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
@@ -140,8 +142,8 @@ const notes = (await getCollection("notes", isPublished))
         </section>
 
         <section class="portfolio-section contact-section" id="contact">
-          <p class="contact-kicker">SAY HELLO</p>
-          <h2>Keep Contact</h2>
+          <p class="contact-kicker">CONTACT</p>
+          <h2>保持联系</h2>
           <p>聊聊正在发生的事。关于技术、创造，或最近让你着迷的问题，欢迎来信。</p>
           <a class="outline-button" href="mailto:yaleyoou@gmail.com">发送邮件</a>
         </section>

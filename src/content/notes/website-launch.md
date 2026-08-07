@@ -4,8 +4,8 @@ cardTitle: "从零搭建一个个人网站"
 description: "记录使用 Astro、Git 与 Cloudflare Pages 搭建、设计并上线 BiumBiu 个人网站的完整过程。"
 date: 2026-07-30
 category: "Build log"
-image: "/images/project-web.webp"
-imageAlt: "显示 Astro 网站项目源码的开发工作区"
+image: "/images/biumbiu-site-cover.webp"
+imageAlt: "BiumBiu 个人网站首页的桌面端界面"
 tags: ["Astro", "Cloudflare Pages", "DNS", "Deployment"]
 featured: true
 order: 1

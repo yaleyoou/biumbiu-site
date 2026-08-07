@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import { ArrowUpRight } from "lucide-astro";
 import PageIntro from "../../components/PageIntro.astro";
+import TagLink from "../../components/TagLink.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { byOrderThenDate, contentPath, isPublished } from "../../lib/content";
 
@@ -19,20 +20,24 @@ const projects = (await getCollection("projects", isPublished)).sort(byOrderThen
 
     <div class="project-archive">
       {projects.map(({ id, data }) => (
-        <a class="project-feature" href={contentPath("projects", id)}>
-          <div class:list={["project-image", { "project-image-contain": data.containImage, "project-image-dark": data.darkImage }]}>
-            <img src={data.image} alt={data.imageAlt} width="1400" height="900" loading="lazy" />
-          </div>
+        <article class="project-feature">
+          <a
+            class:list={["project-image", { "project-image-contain": data.containImage, "project-image-dark": data.darkImage }]}
+            href={contentPath("projects", id)}
+            aria-label={`查看${data.title}`}
+          >
+            <img src={data.image} alt={data.imageAlt} width="1400" height="900" loading="lazy" decoding="async" />
+          </a>
           <div class="project-copy">
             <p class="eyebrow">{data.period} · {data.role}</p>
-            <h2>{data.cardTitle ?? data.title}</h2>
+            <h2><a href={contentPath("projects", id)}>{data.cardTitle ?? data.title}</a></h2>
             <p>{data.description}</p>
             <div class="tag-row">
-              {data.tags.map((tag) => <span class="tag">{tag}</span>)}
+              {data.tags.map((tag) => <TagLink tag={tag} />)}
             </div>
-            <span class="project-detail-link">查看项目详情 <ArrowUpRight size={15} aria-hidden="true" /></span>
+            <a class="project-detail-link" href={contentPath("projects", id)}>查看项目详情 <ArrowUpRight size={15} aria-hidden="true" /></a>
           </div>
-        </a>
+        </article>
       ))}
     </div>
   </section>

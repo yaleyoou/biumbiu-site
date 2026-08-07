@@ -1,0 +1,70 @@
+---
+import { getCollection } from "astro:content";
+import { ArrowLeft, ArrowUpRight } from "lucide-astro";
+import TagLink from "../../components/TagLink.astro";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { contentPath, formatDate, isPublished, tagSlug } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const [notes, projects] = await Promise.all([
+    getCollection("notes", isPublished),
+    getCollection("projects", isPublished)
+  ]);
+  const tags = new Map<string, string>();
+
+  for (const entry of [...notes, ...projects]) {
+    for (const tag of entry.data.tags) {
+      const slug = tagSlug(tag);
+      if (slug && !tags.has(slug)) tags.set(slug, tag);
+    }
+  }
+
+  return [...tags].map(([slug, tag]) => ({ params: { tag: slug }, props: { tag } }));
+}
+
+interface Props {
+  tag: string;
+}
+
+const { tag } = Astro.props as Props;
+const [notes, projects] = await Promise.all([
+  getCollection("notes", isPublished),
+  getCollection("projects", isPublished)
+]);
+const entries = [
+  ...notes.map((entry) => ({ collection: "notes" as const, entry })),
+  ...projects.map((entry) => ({ collection: "projects" as const, entry }))
+]
+  .filter(({ entry }) => entry.data.tags.some((value) => tagSlug(value) === tagSlug(tag)))
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime());
+---
+
+<SiteLayout title={`标签：${tag}`} description={`浏览与 ${tag} 相关的 BiumBiu 笔记和项目。`}>
+  <header class="tag-hero shell reveal">
+    <a class="project-back-link" href="/tags/"><ArrowLeft size={15} aria-hidden="true" /> 全部标签</a>
+    <p class="eyebrow">Topic / {entries.length} items</p>
+    <h1>{tag}</h1>
+    <p>收录所有带有此标签的公开笔记与项目，并按发布时间排序。</p>
+  </header>
+
+  <section class="tag-results shell" aria-label={`${tag} 相关内容`}>
+    {entries.map(({ collection, entry }) => (
+      <article class="tag-result-row">
+        <div class="tag-result-meta">
+          <span>{collection === "notes" ? "笔记" : "项目"}</span>
+          <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+        </div>
+        <div class="tag-result-copy">
+          <h2><a href={contentPath(collection, entry.id)}>{entry.data.cardTitle ?? entry.data.title}</a></h2>
+          <p>{entry.data.description}</p>
+          <div class="tag-row">
+            {entry.data.tags.map((entryTag) => <TagLink tag={entryTag} current={tagSlug(entryTag) === tagSlug(tag)} />)}
+          </div>
+        </div>
+        <a class="tag-result-arrow" href={contentPath(collection, entry.id)} aria-label={`打开${entry.data.title}`}>
+          <ArrowUpRight size={18} aria-hidden="true" />
+        </a>
+      </article>
+    ))}
+  </section>
+</SiteLayout>
