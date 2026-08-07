@@ -57,7 +57,8 @@ const notes = (await getCollection("notes", isPublished))
 ---
 
 <SiteLayout portfolio>
-  <link slot="head" rel="preload" as="image" href="/images/cartonlogo.webp" type="image/webp" fetchpriority="high" />
+  <link slot="head" rel="preload" as="fetch" href="/meselft.glb" type="model/gltf-binary" crossorigin="anonymous" />
+  <link slot="head" rel="preload" as="image" href="/images/meselft-poster.webp" type="image/webp" fetchpriority="high" />
   <div class="portfolio-page" data-spotlight>
     <div class="portfolio-shell">
       <aside class="profile-panel">
@@ -89,19 +90,24 @@ const notes = (await getCollection("notes", isPublished))
       <div class="portfolio-content">
         <section class="hero" aria-label="BiumBiu 个人形象">
           <div class="hero-visual" data-hero-visual>
-            <div class="hero-rainbow" data-hero-rainbow aria-hidden="true">
-              <span class="hero-rainbow-band hero-rainbow-coral" data-rainbow-band></span>
-              <span class="hero-rainbow-band hero-rainbow-gold" data-rainbow-band></span>
-              <span class="hero-rainbow-band hero-rainbow-lime" data-rainbow-band></span>
-              <span class="hero-rainbow-band hero-rainbow-aqua" data-rainbow-band></span>
-              <span class="hero-rainbow-band hero-rainbow-blue" data-rainbow-band></span>
-            </div>
+            <canvas class="hero-signal" data-hero-signal aria-hidden="true"></canvas>
             <span class="hero-spark hero-spark-one" data-hero-spark aria-hidden="true"></span>
             <span class="hero-spark hero-spark-two" data-hero-spark aria-hidden="true"></span>
             <span class="hero-spark hero-spark-three" data-hero-spark aria-hidden="true"></span>
             <div class="hero-character">
               <div class="hero-character-motion" data-character-motion>
-                <div class="hero-character-art" role="img" aria-label="戴眼镜、弹吉他的 BiumBiu 卡通形象"></div>
+                <div
+                  class="hero-model"
+                  data-hero-model
+                  data-state="loading"
+                  role="img"
+                  aria-label="BiumBiu 的 3D 个人形象，可拖动或使用左右方向键旋转"
+                  aria-busy="true"
+                  tabindex="0"
+                >
+                  <div class="hero-model-fallback" aria-hidden="true"></div>
+                  <canvas class="hero-model-canvas" data-hero-model-canvas aria-hidden="true"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -188,18 +194,32 @@ const notes = (await getCollection("notes", isPublished))
     const sections = [...document.querySelectorAll<HTMLElement>("[data-section]")];
     const focusRows = [...document.querySelectorAll<HTMLElement>(".focus-row")];
     const heroVisual = document.querySelector<HTMLElement>("[data-hero-visual]");
-    const heroRainbow = document.querySelector<HTMLElement>("[data-hero-rainbow]");
-    const rainbowBands = [...document.querySelectorAll<HTMLElement>("[data-rainbow-band]")];
+    const heroSignal = document.querySelector<HTMLCanvasElement>("[data-hero-signal]");
     const characterMotion = document.querySelector<HTMLElement>("[data-character-motion]");
     const heroSparks = [...document.querySelectorAll<HTMLElement>("[data-hero-spark]")];
     const finePointer = window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)");
     const visualPointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const heroModel = document.querySelector<HTMLElement>("[data-hero-model]");
+
+    import("../scripts/hero-model")
+      .then(({ mountHeroModel }) => mountHeroModel(heroModel))
+      .catch((error) => {
+        if (heroModel) {
+          heroModel.dataset.state = "error";
+          heroModel.setAttribute("aria-busy", "false");
+        }
+        console.error("Unable to load the hero model runtime.", error);
+      });
+
+    import("../scripts/hero-signal")
+      .then(({ mountHeroSignal }) => mountHeroSignal(heroSignal))
+      .catch((error) => console.error("Unable to load the interactive signal field.", error));
 
     heroVisual?.addEventListener("dragstart", (event) => event.preventDefault());
     heroVisual?.addEventListener("selectstart", (event) => event.preventDefault());
 
-    if (heroVisual && heroRainbow && characterMotion && visualPointer.matches && !reducedMotion.matches) {
+    if (heroVisual && characterMotion && visualPointer.matches && !reducedMotion.matches) {
       let targetX = 0;
       let targetY = 0;
       let currentX = 0;
@@ -214,19 +234,6 @@ const notes = (await getCollection("notes", isPublished))
         heroVisual.style.setProperty("--character-rotate-x", `${y * -4.5}deg`);
         heroVisual.style.setProperty("--character-rotate-y", `${x * 5.5}deg`);
         heroVisual.style.setProperty("--character-rotate-z", `${x * 0.8}deg`);
-        heroVisual.style.setProperty("--character-shadow-x", `${x * -9}px`);
-        heroVisual.style.setProperty("--character-shadow-y", `${27 + y * 3}px`);
-        heroVisual.style.setProperty("--rainbow-x", `${x * -6}px`);
-        heroVisual.style.setProperty("--rainbow-y", `${y * -4}px`);
-        heroVisual.style.setProperty("--rainbow-rotate", `${x * -0.4}deg`);
-
-        rainbowBands.forEach((band, index) => {
-          const depth = index - (rainbowBands.length - 1) / 2;
-          band.style.setProperty("--band-x", `${x * depth * 3.2}px`);
-          band.style.setProperty("--band-y", `${y * depth * 1.8}px`);
-          band.style.setProperty("--band-rotate", `${x * depth * 0.35}deg`);
-        });
-
         heroSparks.forEach((spark, index) => {
           const depth = index + 1;
           const direction = index % 2 === 0 ? 1 : -1;
@@ -283,6 +290,7 @@ const notes = (await getCollection("notes", isPublished))
       window.addEventListener("blur", resetHeroMotion);
       heroVisual.addEventListener("pointerdown", (event) => {
         if (event.button !== 0) return;
+        if ((event.target as HTMLElement).closest("[data-hero-model]")) return;
         velocityX += targetX * 0.08;
         velocityY -= 0.18;
         requestHeroMotion();
