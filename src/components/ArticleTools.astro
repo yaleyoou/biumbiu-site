@@ -1,5 +1,5 @@
 ---
-import { ArrowUp, Check, Copy, Link2, X } from "lucide-astro";
+import { ArrowUp, Link2, X } from "lucide-astro";
 ---
 
 <div class="reading-progress" aria-hidden="true" data-reading-progress>
@@ -22,8 +22,6 @@ import { ArrowUp, Check, Copy, Link2, X } from "lucide-astro";
 
 <div class="article-toast" role="status" aria-live="polite" data-article-toast></div>
 
-<template data-article-icon="copy"><Copy size={17} strokeWidth={1.8} aria-hidden="true" /></template>
-<template data-article-icon="check"><Check size={17} strokeWidth={2} aria-hidden="true" /></template>
 <template data-article-icon="link"><Link2 size={18} strokeWidth={1.8} aria-hidden="true" /></template>
 
 <script>
@@ -39,7 +37,7 @@ import { ArrowUp, Check, Copy, Link2, X } from "lucide-astro";
   let scrollFrame = 0;
   let lastImage: HTMLImageElement | undefined;
 
-  const icon = (name: "copy" | "check" | "link") =>
+  const icon = (name: "link") =>
     document.querySelector<HTMLTemplateElement>(`[data-article-icon="${name}"]`)?.content.cloneNode(true);
 
   const showToast = (message: string) => {
@@ -54,47 +52,6 @@ import { ArrowUp, Check, Copy, Link2, X } from "lucide-astro";
     if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
     await navigator.clipboard.writeText(value);
   };
-
-  article?.querySelectorAll("pre").forEach((pre) => {
-    const wrapper = document.createElement("div");
-    const button = document.createElement("button");
-
-    wrapper.className = "code-block";
-    button.className = "code-copy-button";
-    button.type = "button";
-    button.title = "复制代码";
-    button.setAttribute("aria-label", "复制代码");
-    const copyIcon = icon("copy");
-    if (copyIcon) button.appendChild(copyIcon);
-
-    pre.parentNode?.insertBefore(wrapper, pre);
-    wrapper.appendChild(pre);
-    wrapper.appendChild(button);
-
-    button.addEventListener("click", async () => {
-      try {
-        await copyText(pre.innerText);
-        button.replaceChildren();
-        const checkIcon = icon("check");
-        if (checkIcon) button.appendChild(checkIcon);
-        button.classList.add("copied");
-        button.title = "已复制";
-        button.setAttribute("aria-label", "代码已复制");
-        showToast("代码已复制");
-
-        window.setTimeout(() => {
-          button.replaceChildren();
-          const nextCopyIcon = icon("copy");
-          if (nextCopyIcon) button.appendChild(nextCopyIcon);
-          button.classList.remove("copied");
-          button.title = "复制代码";
-          button.setAttribute("aria-label", "复制代码");
-        }, 1600);
-      } catch {
-        showToast("复制失败，请手动选择代码");
-      }
-    });
-  });
 
   article?.querySelectorAll<HTMLElement>("h2[id], h3[id]").forEach((heading) => {
     const anchor = document.createElement("a");

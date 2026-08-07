@@ -653,11 +653,7 @@ button, input, textarea { font: inherit; }
 .content-article a:hover { color: var(--accent); }
 .content-article blockquote { margin: 40px 0; padding: 12px 0 12px 24px; color: var(--text); border-left: 3px solid var(--coral); }
 .content-article blockquote p { margin: 0; color: inherit; font-family: var(--display); font-size: 25px; line-height: 1.45; }
-.content-article pre { margin: 30px 0 38px; padding: 20px 22px; overflow-x: auto; color: var(--text); background: var(--bg-deep); border: 1px solid var(--line); border-radius: 4px; }
-.content-article pre code { padding: 0; color: inherit; background: transparent; font-size: 13px; line-height: 1.7; }
-.code-block { position: relative; margin: 30px 0 38px; }
-.content-article .code-block pre { margin: 0; padding-top: 25px; padding-right: 70px; }
-.code-copy-button,
+.content-article .expressive-code { margin: 30px 0 38px; }
 .lightbox-close,
 .back-to-top {
   width: 44px;
@@ -671,18 +667,6 @@ button, input, textarea { font: inherit; }
   border-radius: 4px;
   cursor: pointer;
 }
-.code-copy-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  background: #111a17;
-  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
-}
-.code-copy-button:hover,
-.code-copy-button:focus-visible,
-.code-copy-button.copied { color: var(--accent); border-color: rgba(185, 255, 67, 0.42); background: #17231f; }
-.code-copy-button:focus-visible,
 .lightbox-close:focus-visible,
 .back-to-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .content-article table {
@@ -926,8 +910,6 @@ body:has(.image-lightbox[open]) { overflow: hidden; }
 .project-article tbody tr:last-child td { border-bottom: 0; }
 .project-article th { color: var(--accent); background: var(--surface); font-family: var(--mono); font-size: 10px; font-weight: 720; text-transform: uppercase; }
 .project-article td { color: var(--body); font-size: 14px; line-height: 1.6; }
-.project-article pre { margin: 28px 0 36px; padding: 20px 22px; overflow-x: auto; color: var(--text); background: var(--bg-deep); border: 1px solid var(--line); border-radius: 4px; }
-.project-article pre code { padding: 0; color: inherit; background: transparent; font-family: var(--mono); font-size: 13px; }
 
 /* Continue reading */
 .content-end { grid-column: 2; min-width: 0; padding: 0 0 128px; }
@@ -1303,7 +1285,6 @@ body:has(.image-lightbox[open]) { overflow: hidden; }
   .content-article blockquote { margin: 32px 0; padding-left: 18px; }
   .content-article blockquote p { font-size: 21px; }
   .content-article p > img { width: calc(100vw - 32px); }
-  .content-article .code-block pre { padding: 58px 16px 17px; }
   .heading-anchor { width: 44px; height: 44px; margin-left: 2px; opacity: 0.72; }
   .back-to-top { right: 16px; bottom: 16px; }
   .article-toast { bottom: 18px; max-width: calc(100vw - 32px); white-space: nowrap; }
