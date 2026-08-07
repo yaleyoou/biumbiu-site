@@ -57,13 +57,16 @@ const notes = (await getCollection("notes", isPublished))
 ---
 
 <SiteLayout portfolio>
+  <link slot="head" rel="preload" as="image" href="/images/cartonlogo.webp" type="image/webp" fetchpriority="high" />
   <div class="portfolio-page" data-spotlight>
     <div class="portfolio-shell">
       <aside class="profile-panel">
         <div class="profile-top reveal">
-          <a class="profile-mark" href="/" aria-label="BiumBiu 首页">B<span>.</span></a>
+          <a class="profile-avatar" href="/" aria-label="BiumBiu 首页">
+            <img src="/images/avatar.jpg" alt="BiumBiu 的头像" width="120" height="120" loading="eager" decoding="async" />
+          </a>
           <h1>BiumBiu</h1>
-          <h2>AI Infra · Agent · LLM</h2>
+          <h2>CS GRADUATE STUDENT · USTC</h2>
           <p>保持好奇，允许无解。</p>
 
           <nav class="section-nav" aria-label="首页章节">
@@ -84,6 +87,27 @@ const notes = (await getCollection("notes", isPublished))
       </aside>
 
       <div class="portfolio-content">
+        <section class="hero" aria-label="BiumBiu 个人形象">
+          <div class="hero-visual" data-hero-visual>
+            <div class="hero-rainbow" data-hero-rainbow aria-hidden="true">
+              <span class="hero-rainbow-band hero-rainbow-coral" data-rainbow-band></span>
+              <span class="hero-rainbow-band hero-rainbow-gold" data-rainbow-band></span>
+              <span class="hero-rainbow-band hero-rainbow-lime" data-rainbow-band></span>
+              <span class="hero-rainbow-band hero-rainbow-aqua" data-rainbow-band></span>
+              <span class="hero-rainbow-band hero-rainbow-blue" data-rainbow-band></span>
+            </div>
+            <span class="hero-spark hero-spark-one" data-hero-spark aria-hidden="true"></span>
+            <span class="hero-spark hero-spark-two" data-hero-spark aria-hidden="true"></span>
+            <span class="hero-spark hero-spark-three" data-hero-spark aria-hidden="true"></span>
+            <div class="hero-character">
+              <div class="hero-character-motion" data-character-motion>
+                <div class="hero-character-art" role="img" aria-label="戴眼镜、弹吉他的 BiumBiu 卡通形象"></div>
+              </div>
+            </div>
+          </div>
+          <a class="hero-scroll" href="#about"><span>向下滚动</span><span class="hero-scroll-arrow" aria-hidden="true">↓</span></a>
+        </section>
+
         <section class="portfolio-section about-section" id="about" data-section="about">
           <h2 class="mobile-section-title">关于</h2>
           <p>你好，我是 BiumBiu，目前在中国科学技术大学攻读计算机技术硕士。我对智能系统如何工作保持好奇，也喜欢把新想法变成可以亲手构建、验证和理解的东西。</p>
@@ -163,8 +187,107 @@ const notes = (await getCollection("notes", isPublished))
     const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-section-link]")];
     const sections = [...document.querySelectorAll<HTMLElement>("[data-section]")];
     const focusRows = [...document.querySelectorAll<HTMLElement>(".focus-row")];
+    const heroVisual = document.querySelector<HTMLElement>("[data-hero-visual]");
+    const heroRainbow = document.querySelector<HTMLElement>("[data-hero-rainbow]");
+    const rainbowBands = [...document.querySelectorAll<HTMLElement>("[data-rainbow-band]")];
+    const characterMotion = document.querySelector<HTMLElement>("[data-character-motion]");
+    const heroSparks = [...document.querySelectorAll<HTMLElement>("[data-hero-spark]")];
     const finePointer = window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)");
+    const visualPointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    heroVisual?.addEventListener("dragstart", (event) => event.preventDefault());
+    heroVisual?.addEventListener("selectstart", (event) => event.preventDefault());
+
+    if (heroVisual && heroRainbow && characterMotion && visualPointer.matches && !reducedMotion.matches) {
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let velocityX = 0;
+      let velocityY = 0;
+      let heroFrame = 0;
+
+      const applyHeroMotion = (x: number, y: number) => {
+        heroVisual.style.setProperty("--character-x", `${x * 14}px`);
+        heroVisual.style.setProperty("--character-y", `${y * 7}px`);
+        heroVisual.style.setProperty("--character-rotate-x", `${y * -4.5}deg`);
+        heroVisual.style.setProperty("--character-rotate-y", `${x * 5.5}deg`);
+        heroVisual.style.setProperty("--character-rotate-z", `${x * 0.8}deg`);
+        heroVisual.style.setProperty("--character-shadow-x", `${x * -9}px`);
+        heroVisual.style.setProperty("--character-shadow-y", `${27 + y * 3}px`);
+        heroVisual.style.setProperty("--rainbow-x", `${x * -6}px`);
+        heroVisual.style.setProperty("--rainbow-y", `${y * -4}px`);
+        heroVisual.style.setProperty("--rainbow-rotate", `${x * -0.4}deg`);
+
+        rainbowBands.forEach((band, index) => {
+          const depth = index - (rainbowBands.length - 1) / 2;
+          band.style.setProperty("--band-x", `${x * depth * 3.2}px`);
+          band.style.setProperty("--band-y", `${y * depth * 1.8}px`);
+          band.style.setProperty("--band-rotate", `${x * depth * 0.35}deg`);
+        });
+
+        heroSparks.forEach((spark, index) => {
+          const depth = index + 1;
+          const direction = index % 2 === 0 ? 1 : -1;
+          spark.style.setProperty("--spark-x", `${x * depth * 4 * direction}px`);
+          spark.style.setProperty("--spark-y", `${y * depth * 3}px`);
+        });
+      };
+
+      const renderHeroMotion = () => {
+        velocityX = (velocityX + (targetX - currentX) * 0.045) * 0.82;
+        velocityY = (velocityY + (targetY - currentY) * 0.045) * 0.82;
+        currentX += velocityX;
+        currentY += velocityY;
+        applyHeroMotion(currentX, currentY);
+
+        const settled = Math.abs(targetX - currentX) < 0.001
+          && Math.abs(targetY - currentY) < 0.001
+          && Math.abs(velocityX) < 0.001
+          && Math.abs(velocityY) < 0.001;
+
+        if (settled) {
+          currentX = targetX;
+          currentY = targetY;
+          velocityX = 0;
+          velocityY = 0;
+          applyHeroMotion(currentX, currentY);
+          heroFrame = 0;
+          return;
+        }
+
+        heroFrame = window.requestAnimationFrame(renderHeroMotion);
+      };
+
+      const requestHeroMotion = () => {
+        if (!heroFrame) heroFrame = window.requestAnimationFrame(renderHeroMotion);
+      };
+
+      heroVisual.addEventListener("pointermove", (event) => {
+        const bounds = heroVisual.getBoundingClientRect();
+        targetX = Math.max(-1, Math.min(1, ((event.clientX - bounds.left) / bounds.width) * 2 - 1));
+        targetY = Math.max(-1, Math.min(1, ((event.clientY - bounds.top) / bounds.height) * 2 - 1));
+        heroVisual.dataset.motion = "active";
+        requestHeroMotion();
+      }, { passive: true });
+
+      const resetHeroMotion = () => {
+        targetX = 0;
+        targetY = 0;
+        delete heroVisual.dataset.motion;
+        requestHeroMotion();
+      };
+
+      heroVisual.addEventListener("pointerleave", resetHeroMotion);
+      window.addEventListener("blur", resetHeroMotion);
+      heroVisual.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        velocityX += targetX * 0.08;
+        velocityY -= 0.18;
+        requestHeroMotion();
+      });
+    }
 
     if (spotlightRoot && finePointer.matches && !reducedMotion.matches) {
       let targetX = window.innerWidth * 0.68;
