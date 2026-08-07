@@ -160,7 +160,7 @@ button, input, textarea { font: inherit; }
   margin-inline: auto;
   display: grid;
   grid-template-columns: minmax(360px, 0.9fr) minmax(480px, 1.1fr);
-  gap: 64px;
+  gap: clamp(64px, 7vw, 112px);
 }
 .profile-panel {
   position: sticky;
@@ -172,16 +172,7 @@ button, input, textarea { font: inherit; }
   flex-direction: column;
   justify-content: space-between;
 }
-.profile-panel::after {
-  content: "";
-  position: absolute;
-  top: 96px;
-  right: -32px;
-  bottom: 96px;
-  width: 1px;
-  background: linear-gradient(transparent, var(--line) 30%, var(--line) 70%, transparent);
-  opacity: 0.6;
-}
+/* Columns are separated by generous whitespace, not a divider line. */
 .profile-mark {
   position: relative;
   width: 44px;
@@ -1235,7 +1226,6 @@ body:has(.image-lightbox[open]) { overflow: hidden; }
   }
   .portfolio-shell { width: min(760px, calc(100vw - 96px)); display: block; }
   .profile-panel { position: relative; height: auto; min-height: 62svh; padding: 74px 0 48px; }
-  .profile-panel::after { display: none; }
   .profile-panel h1 { font-size: 52px; }
   .section-nav { display: none; }
   .profile-socials { margin-top: 44px; }
