@@ -100,9 +100,24 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#121b18" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4f6f1" media="(prefers-color-scheme: light)" />
+    <script is:inline>
+      (function () {
+        var theme = "dark";
+        try {
+          var stored = localStorage.getItem("theme");
+          if (stored === "light" || stored === "dark") theme = stored;
+          else if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "light";
+        } catch (e) {
+          if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "light";
+        }
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.codeTheme = theme === "light" ? "github-light" : "github-dark";
+      })();
+    </script>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex, follow" />}
-    <meta name="theme-color" content="#121b18" />
     <meta property="og:site_name" content="BiumBiu" />
     <meta property="og:locale" content="zh_CN" />
     <meta property="og:title" content={pageTitle} />

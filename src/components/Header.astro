@@ -1,5 +1,6 @@
 ---
 import { Menu, Search, X } from "lucide-astro";
+import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
   currentPath: string;
@@ -30,12 +31,16 @@ const links = [
       <a class:list={["header-search-link", { active: currentPath.startsWith("/search") }]} href="/search/" aria-label="搜索" title="搜索">
         <Search size={18} strokeWidth={1.8} aria-hidden="true" />
       </a>
+      <ThemeToggle />
     </nav>
 
-    <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="mobile-navigation" data-menu-button>
-      <Menu class="menu-open-icon" size={22} strokeWidth={1.8} />
-      <X class="menu-close-icon" size={22} strokeWidth={1.8} />
-    </button>
+    <div class="header-actions">
+      <ThemeToggle />
+      <button class="menu-button" type="button" aria-label="打开导航" aria-expanded="false" aria-controls="mobile-navigation" data-menu-button>
+        <Menu class="menu-open-icon" size={22} strokeWidth={1.8} />
+        <X class="menu-close-icon" size={22} strokeWidth={1.8} />
+      </button>
+    </div>
   </div>
 
   <nav class="mobile-nav" id="mobile-navigation" aria-label="移动端导航" aria-hidden="true" data-mobile-nav>

@@ -3,6 +3,7 @@ import { ArrowUpRight, BookOpen, Github, Mail, Search } from "lucide-astro";
 import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import TagLink from "../components/TagLink.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
 import VisitCounter from "../components/VisitCounter.astro";
 import { byNewest, byOrderThenDate, contentPath, formatDate, isPublished } from "../lib/content";
 
@@ -78,6 +79,7 @@ const notes = (await getCollection("notes", isPublished))
           <a href="mailto:yaleyoou@gmail.com" aria-label="Email" title="Email"><Mail size={22} /></a>
           <a href="/notes/" aria-label="笔记" title="笔记"><BookOpen size={22} /></a>
           <a href="/search/" aria-label="搜索" title="搜索"><Search size={22} /></a>
+          <ThemeToggle />
         </div>
       </aside>
 
