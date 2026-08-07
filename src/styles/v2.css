@@ -145,13 +145,21 @@ button, input, textarea { font: inherit; }
 }
 .portfolio-page.spotlight-active::before { opacity: 1; }
 .portfolio-page::after {
-  opacity: 0.42;
+  opacity: 0.32;
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 72px 72px;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 34%, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 34%, #000 100%);
+  /* Fade in from the left and dissolve toward the bottom so the grid reads
+     as a faint top-right texture rather than covering the whole page. */
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 34%, #000 100%),
+    linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.55) 42%, transparent 72%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.35) 34%, #000 100%),
+    linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.55) 42%, transparent 72%);
+  mask-composite: intersect;
 }
 .portfolio-shell {
   position: relative;
