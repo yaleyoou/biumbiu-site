@@ -28,7 +28,7 @@ const links = [
           {link.label}
         </a>
       ))}
-      <a class:list={["header-search-link", { active: currentPath.startsWith("/search") }]} href="/search/" aria-label="搜索" title="搜索">
+      <a class:list={["header-search-link", { active: currentPath.startsWith("/search") }]} href="/search/" aria-label="搜索" title="搜索" data-search-trigger>
         <Search size={18} strokeWidth={1.8} aria-hidden="true" />
       </a>
       <ThemeToggle />
@@ -49,7 +49,7 @@ const links = [
         {link.label}
       </a>
     ))}
-    <a class:list={["mobile-nav-link", { active: currentPath.startsWith("/search") }]} href="/search/">
+    <a class:list={["mobile-nav-link", { active: currentPath.startsWith("/search") }]} href="/search/" data-search-trigger>
       搜索
     </a>
   </nav>

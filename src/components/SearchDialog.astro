@@ -1,0 +1,97 @@
+---
+import { X } from "lucide-astro";
+import SearchInterface from "./SearchInterface.astro";
+---
+
+<dialog class="site-search-dialog" aria-labelledby="site-search-dialog-title" data-search-dialog data-pagefind-ignore>
+  <section class="site-search-sheet">
+    <div class="site-search-sheet-inner">
+      <header class="site-search-dialog-header">
+        <div>
+          <p>SEARCH</p>
+          <h2 id="site-search-dialog-title">站内搜索</h2>
+        </div>
+        <button class="site-search-close" type="button" aria-label="关闭搜索" title="关闭搜索" data-search-close>
+          <X size={22} strokeWidth={1.8} aria-hidden="true" />
+        </button>
+      </header>
+      <SearchInterface mode="dialog" />
+    </div>
+  </section>
+</dialog>
+
+<script>
+  const searchDialog = document.querySelector<HTMLDialogElement>("[data-search-dialog]");
+  const searchClose = searchDialog?.querySelector<HTMLButtonElement>("[data-search-close]");
+  const searchRoot = searchDialog?.querySelector<HTMLElement>("[data-site-search]");
+  const searchTriggers = [...document.querySelectorAll<HTMLAnchorElement>("[data-search-trigger]")];
+  const reduceSearchMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let searchReturnFocus: HTMLElement | null = null;
+  let searchCloseTimer = 0;
+
+  const openSearchDialog = (trigger?: HTMLElement) => {
+    if (!searchDialog || typeof searchDialog.showModal !== "function") return;
+    if (searchCloseTimer) window.clearTimeout(searchCloseTimer);
+    searchReturnFocus = trigger ?? document.activeElement as HTMLElement | null;
+
+    if (!searchDialog.open) searchDialog.showModal();
+    searchDialog.dataset.state = "opening";
+    window.requestAnimationFrame(() => {
+      searchDialog.dataset.state = "open";
+      searchRoot?.dispatchEvent(new Event("site-search:activate"));
+    });
+  };
+
+  const closeSearchDialog = () => {
+    if (!searchDialog?.open || searchDialog.dataset.state === "closing") return;
+    searchDialog.dataset.state = "closing";
+
+    const finish = () => {
+      if (!searchDialog.open) return;
+      searchDialog.close();
+      delete searchDialog.dataset.state;
+      searchReturnFocus?.focus({ preventScroll: true });
+      searchReturnFocus = null;
+      searchCloseTimer = 0;
+    };
+
+    if (reduceSearchMotion.matches) finish();
+    else searchCloseTimer = window.setTimeout(finish, 220);
+  };
+
+  searchTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      openSearchDialog(trigger);
+    });
+  });
+
+  searchClose?.addEventListener("click", closeSearchDialog);
+  searchDialog?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    closeSearchDialog();
+  });
+  searchDialog?.addEventListener("click", (event) => {
+    if (event.target === searchDialog) closeSearchDialog();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && searchDialog?.open) {
+      event.preventDefault();
+      closeSearchDialog();
+      return;
+    }
+
+    const target = event.target;
+    const isEditing = target instanceof HTMLInputElement
+      || target instanceof HTMLTextAreaElement
+      || (target instanceof HTMLElement && target.isContentEditable);
+    const commandSearch = (event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase() === "k";
+    const slashSearch = event.key === "/" && !isEditing;
+    if (!commandSearch && !slashSearch) return;
+
+    event.preventDefault();
+    openSearchDialog();
+  });
+</script>

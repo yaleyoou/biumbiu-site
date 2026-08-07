@@ -12,6 +12,7 @@ imageAlt: "自动化科研 Multi-Agent 工作流"
 tags: ["AI4S", "Multi-Agent", "SurveyAgent", "Research Automation"]
 featured: true
 order: 2
+containImage: true
 ---
 
 这是一套持续演化的系统：它覆盖文献调研、代码实验和反思迭代；我主要负责文献调研部分，该部分单独深化成了一套面向“领域谱系地图”的 SurveyAgent 系统。

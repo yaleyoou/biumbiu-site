@@ -4,6 +4,7 @@ import "@fontsource-variable/newsreader";
 import "../styles/v2.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import SearchDialog from "../components/SearchDialog.astro";
 import { getPublicImageDimensions } from "../lib/images";
 
 interface Props {
@@ -151,6 +152,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
     <main id="main">
       <slot />
     </main>
+    <SearchDialog />
     {!portfolio && <Footer />}
   </body>
 </html>
