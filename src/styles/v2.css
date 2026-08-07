@@ -20,9 +20,9 @@
   --accent-soft: rgba(185, 255, 67, 0.1);
   --coral: #ff7b68;
   --line: rgba(167, 201, 184, 0.16);
-  --sans: "Manrope Variable", "Helvetica Neue", sans-serif;
-  --display: "Newsreader Variable", Georgia, serif;
-  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sans: "Manrope Variable", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", sans-serif;
+  --display: "Newsreader Variable", "Songti SC", "Noto Serif SC", Georgia, serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", "PingFang SC", "Microsoft YaHei", monospace;
   --shell: min(1120px, calc(100vw - 48px));
 }
 
