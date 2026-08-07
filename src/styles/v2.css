@@ -175,11 +175,12 @@ button, input, textarea { font: inherit; }
 .profile-panel::after {
   content: "";
   position: absolute;
-  top: 72px;
+  top: 96px;
   right: -32px;
-  bottom: 72px;
+  bottom: 96px;
   width: 1px;
-  background: linear-gradient(transparent, rgba(185, 255, 67, 0.14) 24%, rgba(255, 123, 104, 0.09) 76%, transparent);
+  background: linear-gradient(transparent, var(--line) 30%, var(--line) 70%, transparent);
+  opacity: 0.6;
 }
 .profile-mark {
   position: relative;
@@ -253,18 +254,18 @@ button, input, textarea { font: inherit; }
 }
 .section-nav a::before {
   content: "";
-  width: 32px;
+  width: 22px;
   height: 1px;
   flex: 0 0 auto;
-  background: var(--muted);
-  transition: width 180ms ease, background 180ms ease;
+  background: var(--line);
+  transition: width 220ms ease, background 220ms ease;
 }
 .section-nav a:hover,
-.section-nav a:focus-visible,
-.section-nav a.active { color: var(--text); }
+.section-nav a:focus-visible { color: var(--body); }
 .section-nav a:hover::before,
-.section-nav a:focus-visible::before,
-.section-nav a.active::before { width: 64px; background: var(--accent); }
+.section-nav a:focus-visible::before { width: 40px; background: var(--muted); }
+.section-nav a.active { color: var(--text); }
+.section-nav a.active::before { width: 64px; height: 2px; background: var(--accent); }
 .profile-socials { display: flex; gap: 8px; align-items: center; }
 .profile-socials .theme-toggle { border-radius: 50%; }
 .profile-socials .theme-toggle:hover { transform: translateY(-3px); }
