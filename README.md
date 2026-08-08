@@ -45,7 +45,8 @@ biumbiu-site/
 ├── public/
 │   ├── images/                   # 直接发布的图片
 │   ├── models/                   # 直接发布的 3D 模型
-│   ├── favicon.svg
+│   ├── favicon-256.png           # 浏览器标签页图标
+│   ├── favicon.png               # Favicon 高分辨率原图
 │   └── robots.txt
 ├── scripts/
 │   └── new-content.mjs           # 由 npm 执行的内容脚手架
@@ -173,6 +174,28 @@ imageAlt: "准确描述图片展示的内容"
 - 文件名使用小写英文、数字和连字符。
 - 删除内容后，应检查其图片是否仍被其他页面引用。
 
+导入 JPG、PNG 或已有 WebP 时，使用图片优化命令：
+
+```bash
+npm run image:add -- ~/Desktop/article-cover.png
+```
+
+命令会修正照片方向，将最长边限制为 1600px，以质量 82 输出到 `public/images/`，并打印可直接使用的 Markdown 和 Frontmatter 路径。原始文件不会被修改或删除，已有的同名 WebP 也不会被覆盖。
+
+文件名无法转换为小写英文 slug，或需要自定义文件名时，使用 `--name`：
+
+```bash
+npm run image:add -- ~/Desktop/文章封面.png --name article-cover
+```
+
+检查图片引用和优化状态：
+
+```bash
+npm run image:check
+```
+
+缺失引用或损坏图片会让检查失败；超过 500 KB，以及尺寸或体积较大的 JPG/PNG 只会产生优化提醒。`npm run build` 会自动先执行这项检查。
+
 ## 搜索
 
 构建时，[src/pages/search-index.json.ts](src/pages/search-index.json.ts) 从已发布的项目和笔记生成 `/search-index.json`。
@@ -240,6 +263,8 @@ git diff --check
 | `npm run build` | 运行 Astro 检查并生成静态站点 |
 | `npm run preview` | 预览 `dist/` |
 | `npm run check:functions` | 编译 Cloudflare Pages Functions |
+| `npm run image:add -- <path>` | 转换并导入 WebP 图片 |
+| `npm run image:check` | 检查图片引用、损坏和优化建议 |
 | `npm run new:note -- <slug>` | 新建笔记草稿 |
 | `npm run new:project -- <slug>` | 新建项目草稿 |
 

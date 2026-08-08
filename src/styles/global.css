@@ -725,17 +725,55 @@ button, input, textarea { font: inherit; }
   align-items: center;
   justify-content: space-between;
 }
-.wordmark { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; }
-.logo-mark {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  font-family: var(--mono);
-  font-weight: 740;
-  border: 1px solid var(--accent);
+.wordmark {
+  min-height: 44px;
+  padding: 8px 3px;
+  display: inline-flex;
+  align-items: center;
   border-radius: 4px;
+}
+.logo-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 24px;
+  font-weight: 820;
+  line-height: 1;
+  white-space: nowrap;
+}
+.logo-mark > span {
+  display: inline-block;
+  transform-origin: 50% 80%;
+  transition: color 180ms ease, transform 260ms cubic-bezier(.2,.8,.2,1);
+}
+.logo-mark > span:nth-child(1) { color: var(--accent); transform: translateY(1px) rotate(-4deg); }
+.logo-mark > span:nth-child(2) { transform: translateY(-1px) rotate(2deg); }
+.logo-mark > span:nth-child(3) { color: var(--success); transform: translateY(1px) rotate(-2deg); }
+.logo-mark > span:nth-child(4) { transform: rotate(1deg); }
+.logo-mark > span:nth-child(5) { color: var(--coral); transform: translateY(-1px) rotate(4deg); }
+.logo-mark > span:nth-child(6) { transform: translateY(1px) rotate(-3deg); }
+.logo-mark > span:nth-child(7) { color: var(--accent); transform: rotate(2deg); }
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 56%;
+  width: 11px;
+  height: 3px;
+  background: var(--coral);
+  border-radius: 2px;
+  box-shadow: 7px -4px 0 var(--success);
+  transform: rotate(-13deg);
+  transition: transform 260ms cubic-bezier(.2,.8,.2,1);
+}
+.wordmark:hover .logo-mark > span:nth-child(odd) { transform: translateY(-3px) rotate(-3deg); }
+.wordmark:hover .logo-mark > span:nth-child(even) { transform: translateY(2px) rotate(3deg); }
+.wordmark:hover .logo-mark::after { transform: translate(2px, -2px) rotate(-7deg); }
+.wordmark:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 .desktop-nav { display: flex; align-items: center; gap: 22px; }
 .nav-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--body); font-family: var(--mono); font-size: 11px; }
