@@ -7,11 +7,15 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "npm run model:prepare",
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "prebuild": "npm run model:prepare",
     "build": "npm run image:check && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "check:functions": "wrangler pages functions build functions --outdir .wrangler/functions-build",
     "image:add": "node scripts/add-image.mjs",
     "image:check": "node scripts/check-images.mjs",
+    "model:poster": "node scripts/generate-model-poster.mjs --force",
+    "model:prepare": "node scripts/generate-model-poster.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "new:note": "node scripts/new-content.mjs notes",
     "new:project": "node scripts/new-content.mjs projects"

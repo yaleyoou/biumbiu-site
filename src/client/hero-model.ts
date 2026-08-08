@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const MODEL_URL = "/models/meselft.glb";
+const MODEL_URL = "/models/myself.glb";
 
 function createContactShadow(size: THREE.Vector3) {
   const shadowCanvas = document.createElement("canvas");
@@ -147,7 +148,12 @@ export function mountHeroModel(root: HTMLElement | null) {
   controls.target.set(0, 0.02, 0);
   controls.update();
 
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath("/draco/");
+  dracoLoader.setWorkerLimit(1);
+
   const loader = new GLTFLoader();
+  loader.setDRACOLoader(dracoLoader);
   const yAxis = new THREE.Vector3(0, 1, 0);
   let model: THREE.Object3D | null = null;
   let modelSize: THREE.Vector3 | null = null;
@@ -353,6 +359,7 @@ export function mountHeroModel(root: HTMLElement | null) {
     controls.removeEventListener("end", onControlEnd);
     controls.removeEventListener("change", onControlChange);
     controls.dispose();
+    dracoLoader.dispose();
     disposeObject(stage);
     renderer.dispose();
     delete root.dataset.modelMounted;

@@ -420,7 +420,7 @@ button, input, textarea { font: inherit; }
   height: 100%;
 }
 .hero-model-fallback {
-  background: url("/images/meselft-poster.webp") center / contain no-repeat;
+  background: url("/images/myself-poster.webp") center / contain no-repeat;
   pointer-events: none;
   opacity: 1;
   will-change: opacity;

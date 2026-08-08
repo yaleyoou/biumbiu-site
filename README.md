@@ -49,6 +49,7 @@ biumbiu-site/
 │   ├── favicon.png               # Favicon 高分辨率原图
 │   └── robots.txt
 ├── scripts/
+│   ├── generate-model-poster.mjs # 根据首屏 GLB 自动渲染透明海报
 │   └── new-content.mjs           # 由 npm 执行的内容脚手架
 ├── src/
 │   ├── client/                   # 浏览器端交互代码
@@ -171,8 +172,13 @@ imageAlt: "准确描述图片展示的内容"
 - 照片和复杂截图优先使用 WebP。
 - 简单矢量标识可以使用 SVG。
 - 3D 模型使用 GLB，并提供静态海报作为加载失败回退。
+- 首屏模型固定为 `public/models/myself.glb`。`npm run dev` 和 `npm run build` 会在模型内容变化时自动重建 `public/images/myself-poster.webp`。
 - 文件名使用小写英文、数字和连字符。
 - 删除内容后，应检查其图片是否仍被其他页面引用。
+
+首屏海报生成器需要本机安装 Chrome 或 Chromium，也可以通过 `MODEL_POSTER_BROWSER` 指定浏览器可执行文件。`model:prepare` 还会从当前 Three.js 版本同步 `public/draco/` 解码器。模型、生成后的海报、Draco 文件和 `scripts/model-poster-manifest.json` 应一起提交；模型哈希未变化时，CI 会直接跳过浏览器渲染。
+
+首屏 3D 模型可以使用 [Meshy](https://www.meshy.ai/) 生成，导出后可通过 [BaseToolbox 3D 模型压缩器](https://basetoolbox.com/zh/3d-model-compressor/) 压缩。将最终 GLB 保存为 `public/models/myself.glb`，随后运行 `npm run dev` 或 `npm run build`，项目会自动更新静态海报。
 
 导入 JPG、PNG 或已有 WebP 时，使用图片优化命令：
 
@@ -265,6 +271,7 @@ git diff --check
 | `npm run check:functions` | 编译 Cloudflare Pages Functions |
 | `npm run image:add -- <path>` | 转换并导入 WebP 图片 |
 | `npm run image:check` | 检查图片引用、损坏和优化建议 |
+| `npm run model:poster` | 强制重新渲染首屏模型透明海报 |
 | `npm run new:note -- <slug>` | 新建笔记草稿 |
 | `npm run new:project -- <slug>` | 新建项目草稿 |
 
