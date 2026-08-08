@@ -516,10 +516,25 @@ button, input, textarea { font: inherit; }
   font-weight: 750;
   text-transform: uppercase;
 }
-.about-section { padding: 24px 0 112px; }
-.about-section p { margin: 0 0 18px; }
-.about-section p:last-child { margin-bottom: 0; }
-.about-section strong, .about-section a { color: var(--text); }
+.about-section { padding: 30px 0 120px; }
+.about-heading,
+.about-section > p { max-width: 650px; }
+.about-heading {
+  margin: 0 0 64px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 52px;
+  font-weight: 780;
+  line-height: 1.04;
+}
+.about-section > p {
+  margin: 0 0 26px;
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 430;
+  line-height: 1.72;
+}
+.about-section > p:last-child { margin-bottom: 0; }
 .row-group:has(.focus-row:hover) .focus-row:not(:hover) { opacity: 0.7; }
 .focus-row {
   --row-x: 50%;
@@ -2103,7 +2118,9 @@ body:has(.site-search-dialog[open]) { overflow: hidden; }
   .now-status span { padding: 13px 0 14px; border-right: 0; border-bottom: 1px solid var(--line); }
   .now-status span + span { padding-left: 0; }
   .now-status span:last-child { border-bottom: 0; }
-  .about-section { padding: 24px 0 66px; }
+  .about-section { padding: 24px 0 72px; }
+  .about-heading { margin-bottom: 42px; font-size: 42px; line-height: 1.05; }
+  .about-section > p { margin-bottom: 25px; font-size: 17px; line-height: 1.7; }
   .now-chapter,
   .now-section,
   .now-boundaries { padding: 72px 0; }
