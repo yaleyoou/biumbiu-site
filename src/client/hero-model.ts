@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import dracoDecoderWasmUrl from "three/addons/libs/draco/gltf/draco_decoder.wasm?url";
+import dracoWasmWrapperUrl from "three/addons/libs/draco/gltf/draco_wasm_wrapper.js?url";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
@@ -149,7 +151,10 @@ export function mountHeroModel(root: HTMLElement | null) {
   controls.update();
 
   const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath("/draco/");
+  dracoLoader.setDecoderPath({
+    js: dracoWasmWrapperUrl,
+    wasm: dracoDecoderWasmUrl
+  });
   dracoLoader.setWorkerLimit(1);
 
   const loader = new GLTFLoader();

@@ -3,13 +3,8 @@ import { getCollection } from "astro:content";
 import ProjectArchiveItem from "../../components/ProjectArchiveItem.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { byOrderThenDate, isPublished } from "../../lib/content";
-import { getPublicImageDimensions } from "../../lib/images";
 
 const projects = (await getCollection("projects", isPublished)).sort(byOrderThenDate);
-const projectRecords = await Promise.all(projects.map(async (entry) => ({
-  entry,
-  dimensions: await getPublicImageDimensions(entry.data.image)
-})));
 const counts = {
   total: projects.length,
   ongoing: projects.filter(({ data }) => data.status === "Ongoing").length,
@@ -46,14 +41,8 @@ const stats = [
     <section class="projects-index shell" aria-labelledby="projects-list-title">
       <h2 id="projects-list-title" class="visually-hidden">全部项目</h2>
       <ol class="project-ledger">
-        {projectRecords.map(({ entry, dimensions }, index) => (
-          <ProjectArchiveItem
-            entry={entry}
-            index={index}
-            lead={index === 0}
-            imageWidth={dimensions?.width ?? 1400}
-            imageHeight={dimensions?.height ?? 1000}
-          />
+        {projects.map((entry, index) => (
+          <ProjectArchiveItem entry={entry} index={index} lead={index === 0} />
         ))}
       </ol>
     </section>

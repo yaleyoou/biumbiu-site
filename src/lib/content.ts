@@ -35,6 +35,17 @@ export const estimateReadingMinutes = (markdown: string) => {
   return Math.max(1, Math.ceil(hanCharacters / 450 + latinWords / 220));
 };
 
+// 把 Markdown 正文压成纯文本，供站内搜索索引使用。
+export const cleanMarkdown = (markdown: string) => markdown
+  .replace(/<!--[\s\S]*?-->/g, " ")
+  .replace(/```[^\n]*\n?/g, " ")
+  .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+  .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/[`#>*_~|=]+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
 export const tagSlug = (tag: string) => tag
   .normalize("NFKC")
   .trim()

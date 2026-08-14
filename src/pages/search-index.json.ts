@@ -1,18 +1,8 @@
 import type { APIRoute } from "astro";
 import { getCollection, type CollectionEntry } from "astro:content";
-import { contentPath, formatDate, isPublished } from "../lib/content";
+import { cleanMarkdown, contentPath, formatDate, isPublished } from "../lib/content";
 
 type SearchEntry = CollectionEntry<"notes"> | CollectionEntry<"projects">;
-
-const cleanMarkdown = (markdown: string) => markdown
-  .replace(/<!--[\s\S]*?-->/g, " ")
-  .replace(/```[^\n]*\n?/g, " ")
-  .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-  .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-  .replace(/<[^>]+>/g, " ")
-  .replace(/[`#>*_~|=]+/g, " ")
-  .replace(/\s+/g, " ")
-  .trim();
 
 const toSearchRecord = (entry: SearchEntry) => ({
   title: entry.data.cardTitle ?? entry.data.title,

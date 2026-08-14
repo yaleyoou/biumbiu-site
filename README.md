@@ -1,218 +1,269 @@
 # BiumBiu
 
-[biumbiu.com](https://biumbiu.com) 是一个使用 Astro 构建的静态个人网站，用于发布项目档案、技术笔记和阶段性近况。
+[biumbiu.com](https://biumbiu.com) 的源码仓库。这是一个基于 Astro 的静态个人网站，用于发布技术笔记、项目档案和阶段性近况。
 
-内容由 Markdown 和 Astro Content Collections 管理，前端交互使用 TypeScript，部署目标为 Cloudflare Pages。访问量由 Pages Functions 和 D1 提供。
+笔记和项目以 Markdown 与 Astro Content Collections 作为唯一内容源，在构建期生成页面、RSS、搜索索引和 sitemap。图片由 `astro:assets` 优化，首页使用 Three.js 展示 3D 模型；访问量由 Cloudflare Pages Functions 和 D1 记录。
+
+## 功能概览
+
+- **内容管理**：笔记与项目使用独立 Content Collection，并通过 schema 校验元数据。
+- **静态输出**：归档页、详情页、标签页、RSS、搜索索引和 sitemap 均在构建期生成。
+- **图片优化**：封面输出多宽度 AVIF/WebP，Markdown 正文图片生成响应式 `srcset`。
+- **站内搜索**：浏览器直接读取静态索引，不依赖外部搜索服务。
+- **首页 3D 场景**：Three.js 加载 Draco 压缩的 GLB，并提供静态海报作为回退。
+- **访问量统计**：Pages Function 写入 D1，同时记录单页和全站访问量。
 
 ## 技术栈
 
-- Astro 5
-- TypeScript
-- Astro Content Collections
-- Three.js
-- Cloudflare Pages、Pages Functions 与 D1
+| 类别 | 实现 |
+| --- | --- |
+| 框架 | Astro 5、TypeScript |
+| 内容 | Astro Content Collections、Markdown |
+| 样式与交互 | Astro Components、原生 TypeScript、Three.js |
+| 代码块 | Expressive Code |
+| 部署 | Cloudflare Pages、Pages Functions、D1 |
+| 包管理 | npm、`package-lock.json` |
 
-## 快速开始
+## 本地开发
 
-要求 Node.js 22 或更高版本。
+### 环境要求
+
+- Node.js 22 或更高版本
+- npm（随 Node.js 安装）
+- Chrome 或 Chromium（仅在首屏 3D 模型变化、需要重新生成海报时使用）
+
+确认版本：
 
 ```bash
+node --version
+npm --version
+```
+
+### 安装与启动
+
+```bash
+git clone https://github.com/yaleyoou/biumbiu-site.git
+cd biumbiu-site
 npm ci
 npm run dev
 ```
 
-默认开发地址为 `http://localhost:4321/`。需要在局域网设备上测试时：
+开发服务器默认运行在 <http://localhost:4321/>。局域网设备需要访问时：
 
 ```bash
 npm run dev -- --host 0.0.0.0
 ```
 
-生产构建和预览：
+`npm run dev` 会先执行 `model:prepare`，同步 Draco 解码器，并在模型发生变化时更新首屏静态海报。
+
+### 生产构建
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## 项目结构
+`npm run build` 依次准备模型资源、运行 `astro check`，并将生产文件输出到 `dist/`。`npm run preview` 只预览静态产物，不会模拟 Cloudflare Pages Function 或 D1 绑定。
+
+## 创建内容
+
+### 先理解 slug
+
+`slug` 是内容在文件系统和 URL 中使用的稳定标识，不是固定命令，也不要求与中文标题完全一致。
+
+例如，准备发布一篇标题为「在 SGLang 中部署大模型」的笔记，可以选择：
 
 ```text
-biumbiu-site/
-├── functions/
-│   └── api/views.ts              # Cloudflare Pages 访问量接口
-├── migrations/
-│   └── 0001_views.sql            # D1 数据库迁移
-├── public/
-│   ├── images/                   # 直接发布的图片
-│   ├── models/                   # 直接发布的 3D 模型
-│   ├── favicon-256.png           # 浏览器标签页图标
-│   ├── favicon.png               # Favicon 高分辨率原图
-│   └── robots.txt
-├── scripts/
-│   ├── generate-model-poster.mjs # 根据首屏 GLB 自动渲染透明海报
-│   └── new-content.mjs           # 由 npm 执行的内容脚手架
-├── src/
-│   ├── client/                   # 浏览器端交互代码
-│   ├── components/               # Astro UI 组件
-│   ├── content/
-│   │   ├── notes/                # 笔记 Markdown
-│   │   └── projects/             # 项目 Markdown
-│   ├── layouts/                  # 页面骨架与 SEO
-│   ├── lib/                      # 内容、图片和 Markdown 工具
-│   ├── pages/                    # 文件路由与静态 API
-│   ├── styles/
-│   │   └── global.css            # 全局视觉系统
-│   └── content.config.ts         # Content Collections Schema
-├── astro.config.mjs
-├── package.json
-├── package-lock.json
-└── tsconfig.json
+标题：在 SGLang 中部署大模型
+slug：sglang-deployment
+文件：src/content/notes/sglang-deployment.md
+URL：https://biumbiu.com/notes/sglang-deployment/
 ```
 
-### `scripts/` 与 `src/client/`
+slug 只能包含小写英文字母、数字和连字符，例如 `sglang-deployment`、`a100-benchmark-2026`。内容公开后应尽量保持 slug 不变，否则原 URL 会失效。
 
-两个目录的运行环境不同：
-
-- `scripts/` 是仓库工具，由 Node.js 或 npm 在终端执行，不会打包进网页。
-- `src/client/` 是浏览器代码，由 Astro/Vite 打包，用于搜索、3D 模型和首页视觉交互。
-
-不要把浏览器逻辑放进根目录 `scripts/`，也不要让仓库工具依赖 DOM 或 `window`。
-
-### `public/` 与 `src/`
-
-- `public/` 中的文件保持原样发布，使用 `/images/...`、`/models/...` 这样的根路径引用。
-- `src/` 中的文件由 Astro 和 Vite 处理，不可直接当作线上静态路径使用。
-- 公开图片放在 `public/images/`，GLB 等模型放在 `public/models/`。
-- 未被网站引用、也没有对应生成流程的设计源文件不保留在仓库中。
-
-## 生成目录
-
-以下目录不属于源码，均已加入 `.gitignore`：
-
-| 目录 | 来源 | 是否需要提交 |
-| --- | --- | --- |
-| `node_modules/` | `npm ci` 根据锁文件安装的依赖 | 否 |
-| `dist/` | `npm run build` 生成的生产文件 | 否 |
-| `.astro/` | Astro 的内容索引、类型与开发缓存 | 否 |
-| `.wrangler/` | Wrangler 构建结果或本地 Cloudflare 状态 | 否 |
-| `.claude/` | 本机开发工具配置 | 否 |
-
-`node_modules/` 对本地开发和构建有用，但不是项目源码。它可以删除，之后运行 `npm ci` 即可按 `package-lock.json` 完整恢复。不要手动修改其中的文件，也不要提交到 Git。
-
-`.wrangler/` 可能包含本地 D1 状态。使用本地数据库时不要直接删除；当前只运行函数编译时，其中内容可以重新生成。
-
-## 内容工作流
-
-新建笔记：
+### 新建笔记
 
 ```bash
 npm run new:note -- sglang-deployment
 ```
 
-新建项目：
+这里的 `sglang-deployment` 是示例 slug，可以替换成当前笔记的实际标识。命令中的 `--` 表示把后面的参数传给内容脚手架，而不是传给 npm。
+
+命令会创建：
+
+```text
+src/content/notes/sglang-deployment.md
+```
+
+新文件默认包含 `draft: true`，因此本地开发环境可见，但不会进入生产页面、RSS、搜索索引或 sitemap。
+
+脚手架还会自动填写当天日期、示例标题和占位封面。它们只用于保证草稿可以立即预览，发布前需要替换为当前内容的真实信息。
+
+笔记 frontmatter 示例：
+
+```yaml
+---
+title: "在 SGLang 中部署大模型"
+description: "记录部署环境、关键参数、验证方法和已知边界。"
+date: 2026-08-14
+image: "../../assets/images/sglang-deployment-cover.webp"
+imageAlt: "SGLang 服务部署架构"
+tags: ["SGLang", "LLM 部署"]
+featured: false
+order: 100
+draft: true
+category: "Field note"
+---
+```
+
+### 新建项目
 
 ```bash
 npm run new:project -- inference-stack
 ```
 
-脚手架会在对应集合中创建 Markdown，并默认设置 `draft: true`。开发环境显示草稿，生产构建会排除草稿。发布前将其改为 `false` 或删除该字段。
+该命令会创建 `src/content/projects/inference-stack.md`，对应生产 URL `/projects/inference-stack/`。
 
-文件名就是 URL slug：
-
-```text
-src/content/notes/example.md
--> /notes/example/
-
-src/content/projects/example.md
--> /projects/example/
-```
-
-slug 只使用小写字母、数字和连字符。公开后尽量不要修改，以免旧链接失效。
-
-### Frontmatter
-
-字段定义以 [src/content.config.ts](src/content.config.ts) 为准。
-
-通用必填字段：
-
-| 字段 | 作用 |
-| --- | --- |
-| `title` | 详情页与 SEO 标题 |
-| `description` | 列表摘要与 SEO 描述 |
-| `date` | 发布日期 |
-| `image` | `public/` 中的封面路径 |
-| `imageAlt` | 封面替代文本 |
-
-常用可选字段包括 `cardTitle`、`updated`、`tags`、`featured`、`order` 和 `draft`。
-
-项目还需要 `period` 和 `role`，并可配置：
-
-- `status`: `Ongoing`、`Completed` 或 `Maintained`
-- `stack`: 技术栈摘要
-- `containImage`: 完整显示 Logo、海报或流程图
-- `darkImage`: 为透明素材使用深色背景
-
-正文从二级标题 `##` 开始，主标题由页面自动生成。
-
-## 静态资源
-
-Frontmatter 和 Markdown 均使用站点根路径：
+项目 frontmatter 示例：
 
 ```yaml
-image: "/images/example-cover.webp"
-imageAlt: "准确描述图片展示的内容"
+---
+title: "Inference Stack"
+description: "面向生产环境的大模型推理与性能评测工具链。"
+date: 2026-08-14
+image: "../../assets/images/inference-stack-cover.webp"
+imageAlt: "推理系统组件与数据流"
+tags: ["Inference", "SGLang"]
+featured: true
+order: 20
+draft: true
+period: "2026.06 - 至今"
+role: "Infrastructure Engineer"
+status: "Ongoing"
+stack: "SGLang / CUDA / Prometheus"
+containImage: false
+darkImage: false
+---
+```
+
+### 完整发布流程
+
+1. 为内容选择简短、稳定的 slug，并运行对应的脚手架命令。
+2. 将封面放入 `src/assets/images/`，再修改新文件中的 `image` 和 `imageAlt`。
+3. 填写 frontmatter，正文从 `##` 二级标题开始。页面的一级标题由 `title` 自动生成。
+4. 运行 `npm run dev`，检查草稿内容、图片、目录、标签和移动端布局。
+5. 发布前将 `draft` 改为 `false`，或删除该字段。
+6. 运行 `npm run build`，确认内容 schema、资源引用和所有静态路由均能通过构建。
+
+### Frontmatter 字段
+
+字段定义以 [`src/content.config.ts`](src/content.config.ts) 为准。
+
+所有内容共用以下字段：
+
+| 字段 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `title` | 是 | 无 | 详情页标题与 SEO 标题 |
+| `cardTitle` | 否 | `title` | 列表卡片使用的短标题 |
+| `description` | 是 | 无 | 列表摘要与 SEO 描述 |
+| `date` | 是 | 无 | 发布日期，推荐 `YYYY-MM-DD` |
+| `updated` | 否 | 无 | 最近一次实质更新日期 |
+| `image` | 是 | 无 | `src/assets/images/` 中的封面相对路径 |
+| `imageAlt` | 是 | 无 | 准确描述封面内容的替代文本 |
+| `tags` | 否 | `[]` | 标签数组，用于标签页和相关推荐 |
+| `featured` | 否 | `false` | 是否作为重点内容展示 |
+| `order` | 否 | `100` | 归档排序优先级，数值越小越靠前 |
+| `draft` | 否 | `false` | 是否仅在本地开发环境显示 |
+
+笔记字段：
+
+| 字段 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `category` | 否 | `Field note` | 详情页显示的内容类别 |
+
+项目字段：
+
+| 字段 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `period` | 是 | 无 | 项目时间范围 |
+| `role` | 是 | 无 | 在项目中的职责 |
+| `status` | 否 | `Completed` | `Ongoing`、`Completed` 或 `Maintained` |
+| `stack` | 否 | 无 | 技术栈摘要 |
+| `containImage` | 否 | `false` | 完整展示 Logo、海报或流程图，避免裁切 |
+| `darkImage` | 否 | `false` | 为透明或浅色素材提供深色背景 |
+
+## Markdown 与图片
+
+正文支持标准 Markdown、表格和围栏代码块。写作时遵循以下约定：
+
+- 不在正文重复写 `#` 一级标题。
+- 标题层级从 `##` 开始，并保持连续。
+- 图片必须提供能表达信息的 alt 文本。
+- 代码块标注语言，例如 `bash`、`typescript` 或 `yaml`。
+- 不在 Markdown 中保存 Token、私钥、数据库凭据或内部地址。
+
+内容封面和正文插图统一放在 `src/assets/images/`。因为 Markdown 文件位于 `src/content/notes/` 或 `src/content/projects/`，两类内容都使用相同的相对路径：
+
+```yaml
+image: "../../assets/images/example-cover.webp"
 ```
 
 ```markdown
-![系统流程图](/images/system-flow.webp)
+![系统流程图](../../assets/images/system-flow.webp)
 ```
 
-资源约定：
+构建时：
 
-- 照片和复杂截图优先使用 WebP。
-- 简单矢量标识可以使用 SVG。
-- 3D 模型使用 GLB，并提供静态海报作为加载失败回退。
-- 首屏模型固定为 `public/models/myself.glb`。`npm run dev` 和 `npm run build` 会在模型内容变化时自动重建 `public/images/myself-poster.webp`。
-- 文件名使用小写英文、数字和连字符。
-- 删除内容后，应检查其图片是否仍被其他页面引用。
+- 组件封面生成多宽度 AVIF/WebP。
+- Markdown 正文图片保持源格式并生成响应式 `srcset`。
+- 所有图片写入真实 `width` 和 `height`，避免加载时布局偏移。
+- 路径错误或图片缺失会直接导致内容检查失败。
 
-首屏海报生成器需要本机安装 Chrome 或 Chromium，也可以通过 `MODEL_POSTER_BROWSER` 指定浏览器可执行文件。`model:prepare` 还会从当前 Three.js 版本同步 `public/draco/` 解码器。模型、生成后的海报、Draco 文件和 `scripts/model-poster-manifest.json` 应一起提交；模型哈希未变化时，CI 会直接跳过浏览器渲染。
+照片、截图和复杂插图优先使用 WebP，建议原图宽度不超过 1600px。简单图标可使用 SVG。文件名统一使用小写英文、数字和连字符。
 
-首屏 3D 模型可以使用 [Meshy](https://www.meshy.ai/) 生成，导出后可通过 [BaseToolbox 3D 模型压缩器](https://basetoolbox.com/zh/3d-model-compressor/) 压缩。将最终 GLB 保存为 `public/models/myself.glb`，随后运行 `npm run dev` 或 `npm run build`，项目会自动更新静态海报。
+## 静态资源与 3D 模型
 
-导入 JPG、PNG 或已有 WebP 时，使用图片优化命令：
+`src/assets/` 和 `public/` 的处理方式不同：
+
+| 位置 | 构建行为 | 适用内容 | 引用方式 |
+| --- | --- | --- | --- |
+| `src/assets/images/` | 由 Astro 分析和优化 | 封面、正文插图、头像 | import 或 Markdown 相对路径 |
+| `public/images/` | 原样复制到站点根目录 | CSS 引用资源、模型静态海报 | `/images/...` |
+| `public/models/` | 原样复制 | GLB 模型 | `/models/...` |
+| `public/draco/` | 原样复制 | Draco 解码器 | `/draco/...` |
+
+首屏模型固定为 `public/models/myself.glb`。更新模型后运行：
 
 ```bash
-npm run image:add -- ~/Desktop/article-cover.png
+npm run model:poster
 ```
 
-命令会修正照片方向，将最长边限制为 1600px，以质量 82 输出到 `public/images/`，并打印可直接使用的 Markdown 和 Frontmatter 路径。原始文件不会被修改或删除，已有的同名 WebP 也不会被覆盖。
+该命令会强制生成 `public/images/myself-poster.webp`，并同步当前 Three.js 版本的 Draco 解码器。`npm run dev` 和 `npm run build` 也会自动执行增量检查；模型哈希没有变化时，不会重复渲染。
 
-文件名无法转换为小写英文 slug，或需要自定义文件名时，使用 `--name`：
+生成器需要 Chrome 或 Chromium。未安装在默认位置时，可在 macOS 或 Linux 上指定可执行文件：
 
 ```bash
-npm run image:add -- ~/Desktop/文章封面.png --name article-cover
+MODEL_POSTER_BROWSER=/path/to/chrome npm run model:poster
 ```
 
-检查图片引用和优化状态：
+提交模型更新时，应同时提交 GLB、静态海报、Draco 文件和 `scripts/model-poster-manifest.json`。
 
-```bash
-npm run image:check
-```
+## 搜索、RSS 与访问量
 
-缺失引用或损坏图片会让检查失败；超过 500 KB，以及尺寸或体积较大的 JPG/PNG 只会产生优化提醒。`npm run build` 会自动先执行这项检查。
+### 搜索
 
-## 搜索
+[`src/pages/search-index.json.ts`](src/pages/search-index.json.ts) 在构建时从已发布的笔记和项目生成 `/search-index.json`。浏览器端搜索支持标题、摘要、标签和正文匹配，不需要额外的索引服务或构建命令。
 
-构建时，[src/pages/search-index.json.ts](src/pages/search-index.json.ts) 从已发布的项目和笔记生成 `/search-index.json`。
+### RSS
 
-浏览器端搜索位于 [src/client/site-search.ts](src/client/site-search.ts)，支持标题、摘要、标签和正文匹配。它不依赖外部搜索服务，也不需要额外的构建后索引命令。
+[`src/pages/rss.xml.ts`](src/pages/rss.xml.ts) 将已发布的笔记和项目合并到 `/rss.xml`。Markdown 正文会转换为经过清理的结构化 HTML；链接会变成绝对地址，正文图片则以可读的 alt 文本表示，避免 feed 阅读器请求无效的源码相对路径。
 
-## 访问量与 D1
+### 访问量与 D1
 
-访问量接口位于 [functions/api/views.ts](functions/api/views.ts)，表结构位于 [migrations/0001_views.sql](migrations/0001_views.sql)。
+访问量接口位于 [`functions/api/views.ts`](functions/api/views.ts)，数据库结构位于 [`migrations/0001_views.sql`](migrations/0001_views.sql)。接口只接受同源 POST 请求，并同时更新当前页面与全站计数。
 
-首次创建数据库：
+首次创建生产数据库：
 
 ```bash
 npx wrangler login
@@ -220,26 +271,74 @@ npx wrangler d1 create biumbiu-views
 npx wrangler d1 execute biumbiu-views --remote --file=migrations/0001_views.sql
 ```
 
-在 Cloudflare Pages 项目的 `Settings -> Bindings` 中添加 D1 绑定：
+随后在 Cloudflare Pages 项目的 `Settings -> Bindings` 中添加 D1 绑定：
 
 | 配置 | 值 |
 | --- | --- |
 | Variable name | `DB` |
 | D1 database | `biumbiu-views` |
 
-保存后重新部署。Preview 环境建议使用单独数据库，避免预览访问写入正式统计。
+Preview 环境建议绑定独立数据库，避免预览访问写入正式统计。`npm run dev` 只启动 Astro，不提供 Pages Function 和 D1；访问量组件在本地无法请求接口时会自动隐藏。
 
-验证 Pages Function 能否编译：
+## 项目结构
 
-```bash
-npm run check:functions
+```text
+biumbiu-site/
+├── functions/api/views.ts        # Cloudflare Pages 访问量接口
+├── migrations/0001_views.sql     # D1 数据库迁移
+├── public/
+│   ├── _headers                  # Cloudflare Pages 缓存响应头
+│   ├── draco/                    # Draco 解码器
+│   ├── images/                   # 原样发布的静态图片
+│   └── models/                   # 3D 模型
+├── scripts/
+│   ├── generate-model-poster.mjs # 生成模型海报并同步 Draco
+│   └── new-content.mjs           # 笔记与项目脚手架
+├── src/
+│   ├── assets/images/            # 由 astro:assets 优化的图片
+│   ├── client/                   # 浏览器端交互
+│   ├── components/               # Astro 组件
+│   ├── content/
+│   │   ├── notes/                # 技术笔记
+│   │   └── projects/             # 项目档案
+│   ├── layouts/                  # 页面骨架与 SEO
+│   ├── lib/                      # 内容查询与通用工具
+│   ├── pages/                    # 路由、RSS 与静态 JSON
+│   ├── styles/                   # 全局样式
+│   └── content.config.ts         # Content Collections schema
+├── astro.config.mjs              # Astro、sitemap 与图片配置
+├── package.json                  # npm 命令与依赖
+└── tsconfig.json
 ```
 
-`npm run dev` 只启动 Astro，不提供 Pages Function 和 D1 绑定，因此本地访问量组件会自动隐藏。端到端计数需要在 Cloudflare Preview 或正式环境验证。
+`scripts/` 运行在 Node.js 中，不会打包到网页；`src/client/` 运行在浏览器中，可使用 DOM 和 `window`。不要在两者之间混用运行时 API。
 
-## 构建与部署
+以下目录均为生成产物，已加入 `.gitignore`，不应提交：
 
-Cloudflare Pages 配置：
+| 目录 | 生成方式 |
+| --- | --- |
+| `node_modules/` | `npm ci` |
+| `dist/` | `npm run build` |
+| `.astro/` | Astro 开发、检查或构建 |
+| `.wrangler/` | Wrangler 构建或本地 Cloudflare 状态 |
+
+## 常用命令
+
+| 命令 | 作用 |
+| --- | --- |
+| `npm ci` | 严格按照锁文件安装依赖 |
+| `npm run dev` | 准备模型资源并启动开发服务器 |
+| `npm run build` | 运行内容检查并生成生产站点 |
+| `npm run preview` | 本地预览 `dist/` 静态产物 |
+| `npm run check:functions` | 编译 Cloudflare Pages Functions |
+| `npm run model:prepare` | 增量同步 Draco，并按需更新模型海报 |
+| `npm run model:poster` | 强制重新生成模型海报 |
+| `npm run new:note -- <slug>` | 创建笔记草稿 |
+| `npm run new:project -- <slug>` | 创建项目草稿 |
+
+## 部署到 Cloudflare Pages
+
+Pages 构建配置：
 
 | 配置 | 值 |
 | --- | --- |
@@ -248,9 +347,9 @@ Cloudflare Pages 配置：
 | Build output directory | `dist` |
 | Production branch | `main` |
 
-生产域名配置在 [astro.config.mjs](astro.config.mjs)。
+生产域名由 [`astro.config.mjs`](astro.config.mjs) 中的 `site` 指定。缓存策略位于 [`public/_headers`](public/_headers)：带内容哈希的 Astro 资源长期缓存，模型和 Draco 使用有限缓存，HTML 使用 Cloudflare Pages 默认的 ETag 协商策略。
 
-发布前至少执行：
+发布前执行：
 
 ```bash
 npm run build
@@ -258,28 +357,34 @@ npm run check:functions
 git diff --check
 ```
 
-然后检查首页、搜索、项目与笔记归档、详情页、图片、3D 模型以及移动端布局。
+构建通过后，还应检查首页 3D 场景与海报回退、站内搜索、RSS、项目和笔记详情、响应式图片，以及移动端导航和排版。
 
-## 常用命令
+## 常见问题
 
-| 命令 | 作用 |
-| --- | --- |
-| `npm ci` | 按锁文件干净安装依赖 |
-| `npm run dev` | 启动 Astro 开发服务器 |
-| `npm run build` | 运行 Astro 检查并生成静态站点 |
-| `npm run preview` | 预览 `dist/` |
-| `npm run check:functions` | 编译 Cloudflare Pages Functions |
-| `npm run image:add -- <path>` | 转换并导入 WebP 图片 |
-| `npm run image:check` | 检查图片引用、损坏和优化建议 |
-| `npm run model:poster` | 强制重新渲染首屏模型透明海报 |
-| `npm run new:note -- <slug>` | 新建笔记草稿 |
-| `npm run new:project -- <slug>` | 新建项目草稿 |
+### `Slug must contain only lowercase letters, numbers, and hyphens`
 
-## 维护原则
+slug 中包含了大写字母、空格、下划线或中文。将其改为类似 `sglang-deployment` 的小写连字符格式。
 
-- 内容元数据只在 Markdown Frontmatter 中维护一次。
-- 页面通过集合读取内容，不手工维护重复列表。
-- 不提交生成目录、依赖目录、密钥或本机配置。
-- 不在 Markdown 中保存 Token、私钥、数据库凭据或内部地址。
-- 新增依赖使用 `npm install`，正常安装和 CI 使用 `npm ci`。
-- 修改结构后同步更新本 README，并运行完整构建。
+### `Content already exists`
+
+目标集合中已经存在同名 Markdown。选择新的 slug，或直接编辑错误信息中列出的现有文件。
+
+### 构建时报内容图片不存在
+
+确认图片位于 `src/assets/images/`，并从内容文件使用 `../../assets/images/<filename>` 引用。路径和文件名区分大小写。
+
+### 模型海报生成器找不到浏览器
+
+安装 Chrome/Chromium，或通过 `MODEL_POSTER_BROWSER` 指定可执行文件。模型没有变化时，普通构建会复用现有海报，不需要启动浏览器。
+
+### 本地页面没有访问量
+
+这是预期行为。Astro 开发服务器不运行 Pages Function，也没有 D1 绑定；请在 Cloudflare Preview 或生产环境验证计数。
+
+## 维护约定
+
+- 内容元数据只在 Markdown frontmatter 中维护一次，页面和索引统一从集合读取。
+- 新增或删除内容图片后，检查是否仍有其他页面引用同一文件。
+- 新增依赖使用 `npm install <package>`，日常安装和 CI 使用 `npm ci`。
+- 不提交生成目录、依赖目录、密钥、`.env` 或本机配置。
+- 修改内容 schema、脚本、部署配置或资源流程时，同步更新本 README。

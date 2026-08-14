@@ -7,7 +7,7 @@ period: "2026.01 - 04"
 role: "Competition TA"
 status: "Completed"
 stack: "Ascend / Triton / vLLM"
-image: "/images/vllm-ascend-logo-dark.webp"
+image: "../../assets/images/vllm-ascend-logo-dark.webp"
 imageAlt: "vLLM 与 Ascend 联合标识"
 tags: ["Triton-Ascend", "Ascend NPU", "vLLM-Ascend", "Sparse Attention"]
 featured: true
@@ -22,7 +22,7 @@ darkImage: true
 
 我完整实现了各阶段的 baseline，并把 Paged Attention 与 Quest Sparse Attention 接入 vLLM-Ascend。主要职责集中在集成阶段的题目设计、代码框架和测试脚本建设，同时也参与了前面各阶段的测评、复查和服务器环境支持。
 
-![首届算子开发创新大赛项目海报](/images/ustc-kernel-competition-poster-1200.webp)
+![首届算子开发创新大赛项目海报](../../assets/images/ustc-kernel-competition-poster-1200.webp)
 
 ## 为什么要从算子一直做到推理系统
 

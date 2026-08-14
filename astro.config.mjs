@@ -1,13 +1,18 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import expressiveCode from "astro-expressive-code";
-import rehypeContentImages from "./src/lib/rehype-content-images.mjs";
 
 export default defineConfig({
   site: "https://biumbiu.com",
   output: "static",
   integrations: [
-    sitemap(),
+    sitemap({
+      // 工具页与标签聚合页不进入 sitemap：它们对搜索引擎没有独立内容价值。
+      filter: (page) =>
+        !page.includes("/search/")
+        && !page.includes("/tags/")
+        && !page.includes("/404")
+    }),
     expressiveCode({
       // One dark + one light theme: Expressive Code emits both and switches via
       // prefers-color-scheme, plus the [data-code-theme] override used by the toggle.
@@ -44,8 +49,11 @@ export default defineConfig({
       }
     })
   ],
-  markdown: {
-    rehypePlugins: [[rehypeContentImages, { publicDirectory: "public" }]]
+  image: {
+    // Markdown images use Astro's responsive srcset generation by default.
+    // Component images opt out when they provide their own Picture widths.
+    layout: "constrained",
+    responsiveStyles: true
   },
   devToolbar: {
     enabled: false

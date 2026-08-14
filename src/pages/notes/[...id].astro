@@ -47,7 +47,7 @@ const related = relatedEntries(entry, notes).map((note) => ({
   <ContentHeader collection="notes" displayTitle={entry.data.cardTitle} readingMinutes={readingMinutes} {...entry.data} />
   <div class="content-reading-layout note-reading-layout">
     <TableOfContents headings={headings} maxDepth={2} />
-    <article class="prose content-article note-article" data-toc-article data-pagefind-body>
+    <article class="prose content-article note-article" data-toc-article>
       <Content />
     </article>
     <ContentNavigation

@@ -6,7 +6,7 @@ period: "2026 - Now"
 role: "Deployment & Optimization"
 status: "Ongoing"
 stack: "B300 / SGLang"
-image: "/images/kimik3-cover.webp"
+image: "../../assets/images/kimik3-cover.webp"
 imageAlt: "Kimi K3 从 NVIDIA B300、SGLang、数据分析到 Token 中转服务的推理链路"
 tags: ["Kimi K3", "NVIDIA B300", "SGLang", "Inference"]
 featured: true

@@ -1,7 +1,8 @@
 ---
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import { ArrowLeft, CalendarDays, Clock3 } from "lucide-astro";
 import { formatDate } from "../lib/content";
-import { getPublicImageDimensions } from "../lib/images";
 import TagLink from "./TagLink.astro";
 import VisitCounter from "./VisitCounter.astro";
 
@@ -12,7 +13,7 @@ interface Props {
   description: string;
   date: Date;
   updated?: Date;
-  image: string;
+  image?: ImageMetadata;
   imageAlt: string;
   tags: string[];
   category?: string;
@@ -57,7 +58,6 @@ const facts = isProject
       ["Stack", stack]
     ].filter((fact): fact is [string, string] => Boolean(fact[1]))
   : [];
-const imageDimensions = await getPublicImageDimensions(image);
 ---
 
 <header class="content-hero shell reveal">
@@ -85,13 +85,15 @@ const imageDimensions = await getPublicImageDimensions(image);
     </div>
 
     <div class:list={["content-cover", { "content-cover-contain": containImage, "content-cover-dark": darkImage }]}>
-      <img
-        src={image}
+      <Picture
+        src={image as ImageMetadata}
         alt={imageAlt}
-        width={imageDimensions?.width ?? 1200}
-        height={imageDimensions?.height ?? 800}
-        decoding="async"
-        fetchpriority="high"
+        layout="none"
+        widths={[480, 768, 1200, 1600]}
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        formats={["avif", "webp"]}
+        fallbackFormat="webp"
+        priority
       />
     </div>
   </div>

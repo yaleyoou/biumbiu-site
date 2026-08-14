@@ -1,16 +1,18 @@
 ---
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/newsreader";
+import { getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import SearchDialog from "../components/SearchDialog.astro";
-import { getPublicImageDimensions } from "../lib/images";
+import defaultCover from "../assets/images/biumbiu-site-cover.webp";
 
 interface Props {
   title?: string;
   description?: string;
-  image?: string;
+  image?: ImageMetadata;
   imageAlt?: string;
   portfolio?: boolean;
   article?: boolean;
@@ -23,7 +25,7 @@ interface Props {
 const {
   title = "BiumBiu",
   description = "星野的项目、笔记与正在发生的事。",
-  image = "/images/biumbiu-site-cover.webp",
+  image = defaultCover,
   imageAlt = description,
   portfolio = false,
   article = false,
@@ -35,11 +37,15 @@ const {
 
 const pageTitle = title === "BiumBiu" ? title : `${title} | BiumBiu`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const imageURL = new URL(image, Astro.site);
 const rssURL = new URL("/rss.xml", Astro.site);
 const homeURL = new URL("/", Astro.site);
-const imageDimensions = await getPublicImageDimensions(image);
-const imageType = image.endsWith(".png") ? "image/png" : image.endsWith(".jpg") || image.endsWith(".jpeg") ? "image/jpeg" : "image/webp";
+// Social/OG crawlers need a single canonical image URL plus its real dimensions;
+// emit a fixed-width webp via astro:assets rather than a responsive srcset.
+const ogImage = await getImage({ src: image, width: 1200, format: "webp", layout: "none" });
+const imageURL = new URL(ogImage.src, Astro.site);
+const ogWidth = ogImage.options.width as number;
+const ogHeight = Math.round((image.height / image.width) * ogWidth);
+const imageType = "image/webp";
 const personId = new URL("/#person", Astro.site).href;
 const websiteId = new URL("/#website", Astro.site).href;
 const structuredGraph: Record<string, unknown>[] = [
@@ -80,8 +86,8 @@ if (article && publishedTime) {
     image: {
       "@type": "ImageObject",
       url: imageURL.href,
-      width: imageDimensions?.width,
-      height: imageDimensions?.height
+      width: ogWidth,
+      height: ogHeight
     },
     datePublished: publishedTime.toISOString(),
     dateModified: (modifiedTime ?? publishedTime).toISOString(),
@@ -128,8 +134,8 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
     <meta property="og:image" content={imageURL} />
     <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:image:type" content={imageType} />
-    {imageDimensions && <meta property="og:image:width" content={String(imageDimensions.width)} />}
-    {imageDimensions && <meta property="og:image:height" content={String(imageDimensions.height)} />}
+    <meta property="og:image:width" content={String(ogWidth)} />
+    <meta property="og:image:height" content={String(ogHeight)} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
@@ -140,7 +146,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
     {article && <meta property="article:author" content={personId} />}
     {article && tags.map((tag) => <meta property="article:tag" content={tag} />)}
     <link rel="canonical" href={canonicalURL} />
-    <link rel="alternate" type="application/rss+xml" title="BiumBiu 笔记 RSS" href={rssURL} />
+    <link rel="alternate" type="application/rss+xml" title="BiumBiu RSS" href={rssURL} />
     <link rel="icon" href="/favicon-256.png" type="image/png" sizes="256x256" />
     <slot name="head" />
     <script is:inline type="application/ld+json" set:html={jsonLd} />

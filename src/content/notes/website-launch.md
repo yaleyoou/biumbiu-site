@@ -5,7 +5,7 @@ description: "记录 BiumBiu 从 Astro 静态站点到 Cloudflare Pages、Three.
 date: 2026-07-30
 updated: 2026-08-08
 category: "Build log"
-image: "/images/biumbiu-site-cover.webp"
+image: "../../assets/images/biumbiu-site-cover.webp"
 imageAlt: "BiumBiu 个人网站首页的桌面端界面"
 tags: ["Astro", "Cloudflare Pages", "Three.js", "D1"]
 featured: true
@@ -46,14 +46,14 @@ biumbiu-site/
 │   ├── components/            # Astro UI 组件
 │   ├── content/               # 项目与笔记 Markdown
 │   ├── layouts/               # 页面骨架与 SEO
-│   ├── lib/                   # 内容、图片和 Markdown 工具
+│   ├── lib/                   # 内容和 Markdown 工具
 │   ├── pages/                 # 文件路由与静态 API
 │   └── styles/                # 全局视觉系统
 ├── astro.config.mjs
 └── package.json
 ```
 
-这里最重要的边界有两组。`scripts/` 由 Node.js 在终端运行，不能依赖 DOM 或 `window`；`src/client/` 会被 Vite 打包到浏览器，用于搜索和 3D 交互。`public/` 中的文件保持原样发布，图片和模型分别以 `/images/`、`/models/` 为公开路径前缀；`src/` 中的文件则必须经过 Astro 和 Vite 处理。
+这里最重要的边界有两组。`scripts/` 由 Node.js 在终端运行，不能依赖 DOM 或 `window`；`src/client/` 会被 Vite 打包到浏览器，用于搜索和 3D 交互。`public/` 中的文件保持原样发布，3D 模型以 `/models/` 为公开路径前缀；`src/` 中的文件则必须经过 Astro 和 Vite 处理，其中 `src/assets/images/` 的图片会由 `astro:assets` 构建期压缩，组件封面生成 AVIF/WebP，Markdown 正文图片生成响应式 `srcset`。
 
 ## 本地开发与预览
 
@@ -91,20 +91,19 @@ npm run new:project -- my-project
 
 ## 图片与 3D 模型进入发布流程
 
-公开图片统一放在 `public/images/`，Markdown 和 frontmatter 都使用站点根路径。导入照片或截图时，可以先交给图片脚本调整方向、限制尺寸并转换为 WebP：
+公开图片统一放在 `src/assets/images/`，由 `astro:assets` 在构建期处理。frontmatter 和 Markdown 正文都用相对路径引用（例如 `../../assets/images/cover.webp`），组件里则用 `<Image>`、`<Picture>` 渲染。Frontmatter 封面会生成多宽度 AVIF/WebP，Markdown 正文图片按源格式生成响应式 `srcset`；两者都会写入真实 `width`/`height`，移动端不再下载全尺寸大图，也避免了布局偏移。
 
-```bash
-npm run image:add -- ~/Desktop/article-cover.png
-npm run image:check
+```astro
+<Picture src={cover} alt={coverAlt} layout="none" widths={[480, 768, 1200]} formats={["avif", "webp"]} fallbackFormat="webp" />
 ```
 
-图片检查会阻止缺失引用和损坏文件进入构建，并提示仍有优化空间的大图。这样，文章在本地能显示但部署后丢图的问题可以更早暴露。
+相对路径写错或文件缺失会在 `astro check` 阶段直接报错，因此文章在本地能显示但部署后丢图的问题可以更早暴露。
 
 首页模型固定使用 `public/models/myself.glb`。开发和构建前执行的 `model:prepare` 会在模型变化时更新 `public/images/myself-poster.webp`，并同步当前 Three.js 版本需要的 Draco 解码器。浏览器加载真实模型，静态海报负责首屏预载和失败回退。
 
 ## 构建不只是生成 dist
 
-页面在开发环境能打开，不代表生产构建一定成功。当前构建命令会依次准备模型资源、检查图片引用、执行 Astro 类型检查，再输出静态站点：
+页面在开发环境能打开，不代表生产构建一定成功。当前构建命令会依次准备模型资源、执行 Astro 类型检查（含图片引用校验），再输出静态站点：
 
 ```bash
 npm run build

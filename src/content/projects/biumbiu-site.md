@@ -7,7 +7,7 @@ period: "2026 - Now"
 role: "Design & Development"
 status: "Maintained"
 stack: "Astro / TypeScript / Three.js / Cloudflare"
-image: "/images/biumbiu-site-cover.webp"
+image: "../../assets/images/biumbiu-site-cover.webp"
 imageAlt: "BiumBiu 个人网站首页的桌面端界面"
 tags: ["Astro", "TypeScript", "Three.js", "Cloudflare Pages", "D1", "Content Collections"]
 featured: false

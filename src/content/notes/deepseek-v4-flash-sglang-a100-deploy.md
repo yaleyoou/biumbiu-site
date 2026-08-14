@@ -3,7 +3,7 @@ title: "一次完整部署大模型：在 4 张 A100 上用 SGLang 运行 DeepSe
 cardTitle: "在 4 张 A100 上部署 DeepSeek-V4-Flash-0731"
 description: "记录从官方 checkpoint 出发，在 4 张 A100 上完成 DeepSeek-V4-Flash-0731 的模型转换、A100 适配、TP=4 部署、DSpark 加速与端到端验证的完整过程。"
 date: 2026-08-02
-image: "/images/deepseekv4flash0731.webp"
+image: "../../assets/images/deepseekv4flash0731.webp"
 imageAlt: "4 张 A100 上 SGLang 服务与模型架构示意图"
 tags: ["DeepSeek", "SGLang", "A100", "LLM 部署", "大模型推理"]
 featured: true

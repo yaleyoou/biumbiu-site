@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { constants as fsConstants } from "node:fs";
-import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { dirname, extname, join, resolve, sep } from "node:path";
@@ -15,8 +15,6 @@ const modelPath = join(projectDirectory, "public/models/myself.glb");
 const posterPath = join(projectDirectory, "public/images/myself-poster.webp");
 const manifestPath = join(scriptDirectory, "model-poster-manifest.json");
 const dracoSourceDirectory = join(projectDirectory, "node_modules/three/examples/jsm/libs/draco/gltf");
-const dracoPublicDirectory = join(projectDirectory, "public/draco");
-const dracoFiles = ["draco_decoder.js", "draco_decoder.wasm", "draco_wasm_wrapper.js"];
 const posterSize = 1024;
 
 const contentTypes = new Map([
@@ -37,29 +35,6 @@ async function exists(path) {
     if (error?.code === "ENOENT") return false;
     throw error;
   }
-}
-
-async function syncDracoDecoder() {
-  await mkdir(dracoPublicDirectory, { recursive: true });
-  let changed = false;
-
-  for (const file of dracoFiles) {
-    const source = await readFile(join(dracoSourceDirectory, file));
-    const destination = join(dracoPublicDirectory, file);
-    let current = null;
-
-    try {
-      current = await readFile(destination);
-    } catch (error) {
-      if (error?.code !== "ENOENT") throw error;
-    }
-
-    if (current?.equals(source)) continue;
-    await writeFile(destination, source);
-    changed = true;
-  }
-
-  if (changed) console.log("Synchronized Draco decoder assets.");
 }
 
 async function executableExists(path) {
@@ -269,8 +244,8 @@ function createPosterDocument() {
 function resolveRequestPath(requestPath) {
   if (requestPath === "/models/myself.glb") return modelPath;
   if (requestPath.startsWith("/draco/")) {
-    const resolvedPath = resolve(dracoPublicDirectory, `.${requestPath.slice("/draco".length)}`);
-    return resolvedPath.startsWith(`${dracoPublicDirectory}${sep}`) ? resolvedPath : null;
+    const resolvedPath = resolve(dracoSourceDirectory, `.${requestPath.slice("/draco".length)}`);
+    return resolvedPath.startsWith(`${dracoSourceDirectory}${sep}`) ? resolvedPath : null;
   }
   if (!requestPath.startsWith("/node_modules/")) return null;
 
@@ -506,7 +481,6 @@ async function readManifest() {
 
 async function main() {
   const force = process.argv.includes("--force");
-  await syncDracoDecoder();
   const [model, rendererSource] = await Promise.all([
     readFile(modelPath),
     readFile(scriptPath)

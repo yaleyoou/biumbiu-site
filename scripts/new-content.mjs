@@ -25,7 +25,7 @@ if (existsSync(target)) {
 const common = `title: "在这里填写标题"
 description: "用一到两句话说明这篇内容解决了什么问题。"
 date: ${date}
-image: "/images/hero-circuit.webp"
+image: "../../assets/images/biumbiu-site-cover.webp"
 imageAlt: "描述图片内容"
 tags: ["Tag"]
 featured: false
