@@ -54,7 +54,7 @@ npm run dev
 npm run dev -- --host 0.0.0.0
 ```
 
-`npm run dev` 会先执行 `model:prepare`，同步 Draco 解码器，并在模型发生变化时更新首屏静态海报。
+`npm run dev` 会先执行 `model:prepare`。当 GLB 模型或海报渲染脚本发生变化时，该命令会更新首屏静态海报；没有变化时会直接复用现有文件。
 
 ### 生产构建
 
@@ -231,7 +231,6 @@ image: "../../assets/images/example-cover.webp"
 | `src/assets/images/` | 由 Astro 分析和优化 | 封面、正文插图、头像 | import 或 Markdown 相对路径 |
 | `public/images/` | 原样复制到站点根目录 | CSS 引用资源、模型静态海报 | `/images/...` |
 | `public/models/` | 原样复制 | GLB 模型 | `/models/...` |
-| `public/draco/` | 原样复制 | Draco 解码器 | `/draco/...` |
 
 首屏模型固定为 `public/models/myself.glb`。更新模型后运行：
 
@@ -239,7 +238,9 @@ image: "../../assets/images/example-cover.webp"
 npm run model:poster
 ```
 
-该命令会强制生成 `public/images/myself-poster.webp`，并同步当前 Three.js 版本的 Draco 解码器。`npm run dev` 和 `npm run build` 也会自动执行增量检查；模型哈希没有变化时，不会重复渲染。
+该命令会强制生成 `public/images/myself-poster.webp`。`npm run dev` 和 `npm run build` 也会自动执行增量检查；模型与渲染脚本的哈希没有变化时，不会重复渲染。
+
+网站运行时使用的 Draco WASM 解码器直接从 `three` 依赖导入，由 Vite 输出为带内容哈希的 `/_astro/` 资源，因此仓库不需要维护 `public/draco/`。海报生成器同样从已安装的 `three` 依赖读取解码器，但只通过临时本地服务供无头浏览器使用，不会复制到 `public/`。
 
 生成器需要 Chrome 或 Chromium。未安装在默认位置时，可在 macOS 或 Linux 上指定可执行文件：
 
@@ -247,7 +248,7 @@ npm run model:poster
 MODEL_POSTER_BROWSER=/path/to/chrome npm run model:poster
 ```
 
-提交模型更新时，应同时提交 GLB、静态海报、Draco 文件和 `scripts/model-poster-manifest.json`。
+提交模型更新时，应同时提交 GLB、静态海报和 `scripts/model-poster-manifest.json`。
 
 ## 搜索、RSS 与访问量
 
@@ -288,11 +289,10 @@ biumbiu-site/
 ├── migrations/0001_views.sql     # D1 数据库迁移
 ├── public/
 │   ├── _headers                  # Cloudflare Pages 缓存响应头
-│   ├── draco/                    # Draco 解码器
 │   ├── images/                   # 原样发布的静态图片
 │   └── models/                   # 3D 模型
 ├── scripts/
-│   ├── generate-model-poster.mjs # 生成模型海报并同步 Draco
+│   ├── generate-model-poster.mjs # 按需生成模型静态海报
 │   └── new-content.mjs           # 笔记与项目脚手架
 ├── src/
 │   ├── assets/images/            # 由 astro:assets 优化的图片
@@ -331,7 +331,7 @@ biumbiu-site/
 | `npm run build` | 运行内容检查并生成生产站点 |
 | `npm run preview` | 本地预览 `dist/` 静态产物 |
 | `npm run check:functions` | 编译 Cloudflare Pages Functions |
-| `npm run model:prepare` | 增量同步 Draco，并按需更新模型海报 |
+| `npm run model:prepare` | 检查模型和渲染脚本，并按需更新模型海报 |
 | `npm run model:poster` | 强制重新生成模型海报 |
 | `npm run new:note -- <slug>` | 创建笔记草稿 |
 | `npm run new:project -- <slug>` | 创建项目草稿 |
@@ -347,7 +347,7 @@ Pages 构建配置：
 | Build output directory | `dist` |
 | Production branch | `main` |
 
-生产域名由 [`astro.config.mjs`](astro.config.mjs) 中的 `site` 指定。缓存策略位于 [`public/_headers`](public/_headers)：带内容哈希的 Astro 资源长期缓存，模型和 Draco 使用有限缓存，HTML 使用 Cloudflare Pages 默认的 ETag 协商策略。
+生产域名由 [`astro.config.mjs`](astro.config.mjs) 中的 `site` 指定。缓存策略位于 [`public/_headers`](public/_headers)：带内容哈希的 Astro 资源（包括 Draco 解码器）长期缓存，GLB 模型和静态海报使用有限缓存，HTML 使用 Cloudflare Pages 默认的 ETag 协商策略。
 
 发布前执行：
 
