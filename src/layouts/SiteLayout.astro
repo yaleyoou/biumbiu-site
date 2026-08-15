@@ -14,7 +14,9 @@ interface Props {
   description?: string;
   image?: ImageMetadata;
   imageAlt?: string;
+  lang?: string;
   portfolio?: boolean;
+  standalone?: boolean;
   article?: boolean;
   publishedTime?: Date;
   modifiedTime?: Date;
@@ -27,7 +29,9 @@ const {
   description = "星野的项目、笔记与正在发生的事。",
   image = defaultCover,
   imageAlt = description,
+  lang = "zh-CN",
   portfolio = false,
+  standalone = false,
   article = false,
   publishedTime,
   modifiedTime,
@@ -103,7 +107,7 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -152,13 +156,13 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
     <script is:inline type="application/ld+json" set:html={jsonLd} />
     <title>{pageTitle}</title>
   </head>
-  <body class:list={{ "portfolio-body": portfolio, "article-body": article }}>
+  <body class:list={{ "portfolio-body": portfolio, "standalone-body": standalone, "article-body": article }}>
     <a class="skip-link" href="#main">跳到正文</a>
-    {!portfolio && <Header currentPath={Astro.url.pathname} />}
+    {!portfolio && !standalone && <Header currentPath={Astro.url.pathname} />}
     <main id="main">
       <slot />
     </main>
-    <SearchDialog />
-    {!portfolio && <Footer />}
+    {!standalone && <SearchDialog />}
+    {!portfolio && !standalone && <Footer />}
   </body>
 </html>

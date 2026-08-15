@@ -1,0 +1,78 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+
+type TimelineEntryKind = "Experience" | "Publication" | "Award";
+
+interface TimelineEntry {
+  period: string;
+  title: string;
+  kind: TimelineEntryKind;
+  details: string;
+}
+
+const entries: TimelineEntry[] = [
+  {
+    period: "Time",
+    title: "XXXX",
+    kind: "Publication",
+    details: "XXX"
+  }
+];
+---
+
+<SiteLayout
+  title="Timeline"
+  description="A chronological record of BiumBiu's publications, awards, and experience."
+  lang="en"
+  standalone
+>
+  <div class="timeline-page">
+    <div class="timeline-shell">
+      <a class="timeline-back" href="/">
+        <span aria-hidden="true">←</span>
+        <span>BiumBiu</span>
+      </a>
+
+      <header class="timeline-heading reveal">
+        <h1>Timeline</h1>
+      </header>
+
+      <section class="timeline-ledger" aria-labelledby="timeline-table-title">
+        <h2 id="timeline-table-title" class="visually-hidden">Timeline entries</h2>
+        <table class="timeline-table">
+          <caption class="visually-hidden">A timeline of BiumBiu's publications, awards, and experience</caption>
+          <colgroup>
+            <col class="timeline-col-period" />
+            <col class="timeline-col-entry" />
+            <col class="timeline-col-kind" />
+            <col class="timeline-col-details" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Entry</th>
+              <th scope="col">Category</th>
+              <th scope="col">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => (
+              <tr>
+                <td class="timeline-period">{entry.period}</td>
+                <td class="timeline-entry">
+                  <strong>{entry.title}</strong>
+                  <div class="timeline-mobile-meta">
+                    <span class="timeline-mobile-kind">{entry.kind}</span>
+                    <p>{entry.details}</p>
+                  </div>
+                </td>
+                <td class="timeline-kind"><span>{entry.kind}</span></td>
+                <td class="timeline-details">{entry.details}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+</SiteLayout>

@@ -1,4 +1,5 @@
 ---
+import { Github, Mail, Rss } from "lucide-astro";
 import VisitCounter from "./VisitCounter.astro";
 
 const year = new Date().getFullYear();
@@ -8,12 +9,21 @@ const year = new Date().getFullYear();
   <div class="footer-inner">
     <div>
       <p class="footer-mark">BiumBiu<span>.</span></p>
-      <p class="footer-note">建立、记录，然后继续。</p>
+      <p class="footer-note">Build. Write. Keep going.</p>
     </div>
     <div class="footer-links" aria-label="外部链接">
-      <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer">GitHub</a>
-      <a href="mailto:yaleyoou@gmail.com">Email</a>
-      <a href="/rss.xml">RSS</a>
+      <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer">
+        <Github size={16} strokeWidth={1.8} aria-hidden="true" />
+        <span>GitHub</span>
+      </a>
+      <a href="mailto:yaleyoou@gmail.com">
+        <Mail size={16} strokeWidth={1.8} aria-hidden="true" />
+        <span>Email</span>
+      </a>
+      <a href="/rss.xml">
+        <Rss size={16} strokeWidth={1.8} aria-hidden="true" />
+        <span>RSS</span>
+      </a>
     </div>
     <p class="footer-meta">© {year} · BiumBiu · <VisitCounter /></p>
   </div>
