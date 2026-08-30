@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import { getCollection } from "astro:content";
 import { ArrowUpRight } from "lucide-astro";
 import PageIntro from "../../components/PageIntro.astro";
@@ -22,12 +24,24 @@ const tags = [...new Set(notes.flatMap(({ data }) => data.tags))].sort((a, b) =>
     </div>
 
     <div class="notes-list">
-      {notes.map(({ id, data }) => (
+      {notes.map(({ id, data }, index) => (
         <article class="note-list-row">
           <div class="note-list-meta">
             <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
             <span>{data.category}</span>
           </div>
+          <a class="note-list-media" href={contentPath("notes", id)} aria-label={`打开${data.title}`} tabindex="-1">
+            <Image
+              src={data.image as ImageMetadata}
+              alt={data.imageAlt}
+              widths={[180, 360, 540]}
+              sizes="(max-width: 680px) 104px, 190px"
+              format="webp"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : "auto"}
+              decoding="async"
+            />
+          </a>
           <div class="note-list-copy">
             <h2><a href={contentPath("notes", id)}>{data.cardTitle ?? data.title}</a></h2>
             <p>{data.description}</p>
