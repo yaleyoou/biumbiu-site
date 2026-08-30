@@ -14,14 +14,16 @@ featured: true
 order: 2
 containImage: true
 ---
-
 这是一套持续演化的系统：它覆盖文献调研、代码实验和反思迭代；我主要负责文献调研部分，该部分单独深化成了一套面向“领域谱系地图”的 SurveyAgent 系统。
+
+github仓库：https://github.com/yaleyoou/Auto-Sci-Find-MutiAgent
 
 ## 先说明两个版本
 
-| 版本 | 目标 | 主要 Agent |
-| --- | --- | --- |
-| 科研闭环v1 | 从研究问题推进到可验证的实验报告 | ResearchAgent、SurveyAgent、ReflectionAgent、CoderAgent |
+
+| 版本       | 目标                                 | 主要 Agent                                                     |
+| ---------- | ------------------------------------ | -------------------------------------------------------------- |
+| 科研闭环v1 | 从研究问题推进到可验证的实验报告     | ResearchAgent、SurveyAgent、ReflectionAgent、CoderAgent        |
 | 调研系统v2 | 从研究方向或种子论文构建领域谱系地图 | SurveyAgent、LineageAgent、PaperReaderAgent、SurveyCriticAgent |
 
 两版共用 BaseAgent、工具注册、Skill 加载、上下文管理和文件化产物等基础设施。比赛名次和完整 Multi-Agent 系统是团队成果；我主要负责文献调研链路及其后续演化，包括查询规划、检索筛选、引用扩展、论文解析与分析、文献矩阵和调研质量闭环。后续已将自己负责的文献调研部分整合到nanobot形成产品。
@@ -53,12 +55,13 @@ Research Seed
 
 最上层的 ResearchAgent 是调度者。它不亲自完成所有工作，而是负责拆解任务、选择下一步策略、把上游产物交给合适的子 Agent，并根据质量检查结果决定继续、回退还是结束。
 
-| Agent | 主要职责 | 关键产物 |
-| --- | --- | --- |
-| SurveyAgent | 检索、筛选、解析和精读论文，提炼谱系、baseline、数据集、指标与 gap | survey report |
-| ReflectionAgent | 检查调研覆盖、实验充分性和创新性，决定通过或打回 | quality state |
-| CoderAgent | 搭建环境、复现 baseline、执行优化与对照实验、记录结果 | experiment report |
-| ResearchAgent | 维护全局任务状态，完成跨 Agent 调度和最终汇总 | state / handoff |
+
+| Agent           | 主要职责                                                           | 关键产物          |
+| --------------- | ------------------------------------------------------------------ | ----------------- |
+| SurveyAgent     | 检索、筛选、解析和精读论文，提炼谱系、baseline、数据集、指标与 gap | survey report     |
+| ReflectionAgent | 检查调研覆盖、实验充分性和创新性，决定通过或打回                   | quality state     |
+| CoderAgent      | 搭建环境、复现 baseline、执行优化与对照实验、记录结果              | experiment report |
+| ResearchAgent   | 维护全局任务状态，完成跨 Agent 调度和最终汇总                      | state / handoff   |
 
 系统要求子 Agent 通过文件交接证据和状态，而不是只返回一段自然语言摘要。ResearchAgent 在做关键判断时，也要重新读取报告、日志和结果文件。
 
@@ -172,14 +175,15 @@ PaperReaderAgent 聚焦主干节点。每篇笔记不仅总结方法，还要回
 
 项目的演化大致经历了以下阶段：
 
-| 时间 | 主要变化 |
-| --- | --- |
-| 2026.06.06 | 完成基础 LLM tool-use loop、工具抽象和 Skill 加载机制 |
-| 2026.06.07 | 打通检索、筛选、下载、解析、精读、综合流程，并加入 CoderAgent |
-| 2026.06.08 | 将专职 Agent 暴露成主控工具，加入 ReflectionAgent 和后台任务 |
-| 2026.06.09-10 | 增加持久任务图、handoff、上下文压缩、大结果落盘和分页读文件 |
-| 2026.06.11 | 修复后台任务提前结束和空返回，加入引用扩展与二次筛选 |
-| 2026.06.30+ | 收敛为文献调研系统，加入谱系、精读、文献矩阵和证据闸门 |
+
+| 时间          | 主要变化                                                      |
+| ------------- | ------------------------------------------------------------- |
+| 2026.06.06    | 完成基础 LLM tool-use loop、工具抽象和 Skill 加载机制         |
+| 2026.06.07    | 打通检索、筛选、下载、解析、精读、综合流程，并加入 CoderAgent |
+| 2026.06.08    | 将专职 Agent 暴露成主控工具，加入 ReflectionAgent 和后台任务  |
+| 2026.06.09-10 | 增加持久任务图、handoff、上下文压缩、大结果落盘和分页读文件   |
+| 2026.06.11    | 修复后台任务提前结束和空返回，加入引用扩展与二次筛选          |
+| 2026.06.30+   | 收敛为文献调研系统，加入谱系、精读、文献矩阵和证据闸门        |
 
 参赛版本强调 `Survey -> Reflection -> Coder -> Reflection` 的完整实验闭环；赛后版本则刻意移除实验 Agent，把范围收窄为“从研究方向或种子论文构建可复用的领域地图”。
 
