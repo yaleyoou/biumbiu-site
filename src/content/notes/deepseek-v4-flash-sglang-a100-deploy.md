@@ -9,10 +9,8 @@ tags: ["DeepSeek", "SGLang", "A100", "LLM 部署", "大模型推理"]
 featured: true
 order: 100
 draft: false
-category: "Field note"
+category: "AI Infra"
 ---
-
-
 > - 时间：2026 年 8 月
 > - 模型：DeepSeek-V4-Flash-0731
 > - 推理框架：SGLang v0.5.16
@@ -45,39 +43,41 @@ DSpark 部署链路的迁移与回归。
 
 最终验证环境如下：
 
-| 项目 | 配置 |
-| --- | --- |
-| GPU | 4 x NVIDIA A100-SXM4-80GB，SM80 |
-| CUDA runtime | 12.9 |
-| PyTorch | 2.11.0+cu129 |
-| SGLang | 0.5.16 |
-| SGLang commit | `fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1` |
-| Triton | 3.6.0 |
-| sglang-kernel | 0.4.5+cu129 |
-| flashinfer-python | 0.6.14 |
-| nvidia-cutlass-dsl | 4.6.0 |
-| Tensor Parallel | TP=4 |
-| 主权重 dtype | BF16 |
-| Routed experts | packed MXFP4，运行时转为 MXFP4/INT8 路径 |
-| KV cache | BF16 |
-| Indexer cache | INT8 |
-| Speculative decoding | DSpark |
+
+| 项目                 | 配置                                       |
+| -------------------- | ------------------------------------------ |
+| GPU                  | 4 x NVIDIA A100-SXM4-80GB，SM80            |
+| CUDA runtime         | 12.9                                       |
+| PyTorch              | 2.11.0+cu129                               |
+| SGLang               | 0.5.16                                     |
+| SGLang commit        | `fdebc938f7f4d16fe6b9f55dcd9a767cf0899ea1` |
+| Triton               | 3.6.0                                      |
+| sglang-kernel        | 0.4.5+cu129                                |
+| flashinfer-python    | 0.6.14                                     |
+| nvidia-cutlass-dsl   | 4.6.0                                      |
+| Tensor Parallel      | TP=4                                       |
+| 主权重 dtype         | BF16                                       |
+| Routed experts       | packed MXFP4，运行时转为 MXFP4/INT8 路径   |
+| KV cache             | BF16                                       |
+| Indexer cache        | INT8                                       |
+| Speculative decoding | DSpark                                     |
 
 真实部署结果：
 
-| 验证项目 | 结果 |
-| --- | --- |
-| Patch、kernel、validator tests | 68 passed |
-| SGLang API/protocol unit tests | 88 passed |
-| 原始 checkpoint 校验 | PASS |
-| 转换后 checkpoint 校验 | PASS |
-| 基础模式 API 回归 | 12/12 passed |
-| DSpark API 回归 | 12/12 passed |
-| 外部 HTTPS 代理 | 12/12 passed |
-| 长上下文 Chat API | 8,214 和 32,790 prompt tokens passed |
-| 官方 server benchmark | 8K/32K 精确输入，50/50 请求成功 |
-| ShareGPT 在线 benchmark | 0.5/1/2/3 req/s，两轮 800/800 请求成功 |
-| 并发性能 | concurrency 1/4/8，五轮固定长度测试完成 |
+
+| 验证项目                       | 结果                                    |
+| ------------------------------ | --------------------------------------- |
+| Patch、kernel、validator tests | 68 passed                               |
+| SGLang API/protocol unit tests | 88 passed                               |
+| 原始 checkpoint 校验           | PASS                                    |
+| 转换后 checkpoint 校验         | PASS                                    |
+| 基础模式 API 回归              | 12/12 passed                            |
+| DSpark API 回归                | 12/12 passed                            |
+| 外部 HTTPS 代理                | 12/12 passed                            |
+| 长上下文 Chat API              | 8,214 和 32,790 prompt tokens passed    |
+| 官方 server benchmark          | 8K/32K 精确输入，50/50 请求成功         |
+| ShareGPT 在线 benchmark        | 0.5/1/2/3 req/s，两轮 800/800 请求成功  |
+| 并发性能                       | concurrency 1/4/8，五轮固定长度测试完成 |
 
 DSpark 模式启动后，每张卡约剩余 27.43GB，SGLang 计算出的
 `max_total_num_tokens=412416`，最大运行请求数为 48。
@@ -85,11 +85,12 @@ DSpark 模式启动后，每张卡约剩余 27.43GB，SGLang 计算出的
 使用 SGLang 官方 serving benchmark，固定每个请求输入 1,024 tokens、生成 128
 tokens，预热并清空 Radix Cache 后做五轮测试，聚合输出吞吐的中位数为：
 
-| 并发 | 五轮中位输出吞吐 | 五轮范围 |
-| ---: | ---: | ---: |
-| 1 | 107.01 tok/s | 106.98-115.17 tok/s |
-| 4 | 237.01 tok/s | 208.11-245.05 tok/s |
-| 8 | 314.54 tok/s | 306.01-328.41 tok/s |
+
+| 并发 | 五轮中位输出吞吐 |            五轮范围 |
+| ---: | ---------------: | ------------------: |
+|    1 |     107.01 tok/s | 106.98-115.17 tok/s |
+|    4 |     237.01 tok/s | 208.11-245.05 tok/s |
+|    8 |     314.54 tok/s | 306.01-328.41 tok/s |
 
 这些是固定合成输入下的模型服务核心性能，不包含 Chat 模板和客户端 tokenization，
 也不等同于真实业务流量。详细口径和每轮数据见第十三节。
@@ -693,10 +694,11 @@ python scripts/long_context_api.py \
 
 本次重新实测结果如下：
 
+
 | 目标 prompt tokens | Chat 实际 tokens | completion tokens | 单次耗时 | 结果 |
-| ---: | ---: | ---: | ---: | --- |
-| 8,192 | 8,214 | 6 | 1.533s | PASS |
-| 32,768 | 32,790 | 6 | 2.994s | PASS |
+| -----------------: | ---------------: | ----------------: | -------: | ---- |
+|              8,192 |            8,214 |                 6 |   1.533s | PASS |
+|             32,768 |           32,790 |                 6 |   2.994s | PASS |
 
 这里多出的 22 tokens 来自 system/user 消息包装。这个脚本使用重复文本构造输入，
 两个请求顺序执行，第二个请求还可能命中第一个请求留下的公共前缀；同时模型只生成
@@ -760,19 +762,21 @@ python -m sglang.benchmark.serving \
 
 固定 1,024 input tokens + 128 output tokens 的五轮结果为：
 
-| 并发 | 请求/轮 | 五轮输出吞吐（tok/s） | 中位数 | 范围 | CV（变异系数） |
-| ---: | ---: | --- | ---: | ---: | ---: |
-| 1 | 16 | 106.99 / 106.98 / 107.01 / 115.17 / 112.90 | 107.01 | 106.98-115.17 | 3.59% |
-| 4 | 32 | 208.11 / 237.01 / 245.05 / 221.40 / 242.39 | 237.01 | 208.11-245.05 | 6.78% |
-| 8 | 64 | 319.90 / 308.06 / 328.41 / 306.01 / 314.54 | 314.54 | 306.01-328.41 | 2.89% |
+
+| 并发 | 请求/轮 | 五轮输出吞吐（tok/s）                      | 中位数 |          范围 | CV（变异系数） |
+| ---: | ------: | ------------------------------------------ | -----: | ------------: | -------------: |
+|    1 |      16 | 106.99 / 106.98 / 107.01 / 115.17 / 112.90 | 107.01 | 106.98-115.17 |          3.59% |
+|    4 |      32 | 208.11 / 237.01 / 245.05 / 221.40 / 242.39 | 237.01 | 208.11-245.05 |          6.78% |
+|    8 |      64 | 319.90 / 308.06 / 328.41 / 306.01 / 314.54 | 314.54 | 306.01-328.41 |          2.89% |
 
 辅助指标同样取五轮中位数：
 
+
 | 并发 | median TTFT | median TPOT | DSpark average accept length |
-| ---: | ---: | ---: | ---: |
-| 1 | 239.16ms | 7.48ms | 2.52 |
-| 4 | 252.61ms | 14.19ms | 2.51 |
-| 8 | 267.08ms | 23.40ms | 2.52 |
+| ---: | ----------: | ----------: | ---------------------------: |
+|    1 |    239.16ms |      7.48ms |                         2.52 |
+|    4 |    252.61ms |     14.19ms |                         2.51 |
+|    8 |    267.08ms |     23.40ms |                         2.52 |
 
 15 个正式轮次共完成 560 个请求、573,440 input tokens 和 71,680 output tokens；
 全部请求成功，并且每个请求都准确生成 128 tokens。
@@ -803,10 +807,11 @@ SGLang v0.5.16 自己的
 
 这 100 条请求的 token 分布为：
 
-| 长度 | mean | P50 | P95 | max |
-| --- | ---: | ---: | ---: | ---: |
-| prompt tokens | 350.84 | 158 | 1,329.10 | 3,588 |
-| output tokens | 236.76 | 173 | 688.70 | 821 |
+
+| 长度            |   mean |    P50 |      P95 |   max |
+| --------------- | -----: | -----: | -------: | ----: |
+| prompt tokens   | 350.84 |    158 | 1,329.10 | 3,588 |
+| output tokens   | 236.76 |    173 |   688.70 |   821 |
 | prompt + output | 587.60 | 415.50 | 1,855.95 | 3,681 |
 
 官方脚本可以自动下载数据集，因此复现时不需要把本机 Hugging Face cache 路径写进
@@ -842,12 +847,13 @@ done
 两轮在每个档位共完成 200 条请求。吞吐按两轮总 token / 总测试时间聚合，平均并发
 也按测试时间加权；两轮输出吞吐范围单独列出，以免隐藏运行波动：
 
-| 到达率 | 完成速率 | 输出吞吐 | 两轮输出吞吐范围 | 平均并发 |
-| ---: | ---: | ---: | ---: | ---: |
-| 0.5 req/s | 0.538 req/s | 127.46 tok/s | 127.45-127.47 tok/s | 1.62 |
-| 1 req/s | 1.040 req/s | 246.17 tok/s | 246.00-246.35 tok/s | 3.45 |
-| 2 req/s | 1.948 req/s | 461.12 tok/s | 458.09-464.20 tok/s | 12.59 |
-| 3 req/s | 2.438 req/s | 577.14 tok/s | 556.34-599.55 tok/s | 27.28 |
+
+|    到达率 |    完成速率 |     输出吞吐 |    两轮输出吞吐范围 | 平均并发 |
+| --------: | ----------: | -----------: | ------------------: | -------: |
+| 0.5 req/s | 0.538 req/s | 127.46 tok/s | 127.45-127.47 tok/s |     1.62 |
+|   1 req/s | 1.040 req/s | 246.17 tok/s | 246.00-246.35 tok/s |     3.45 |
+|   2 req/s | 1.948 req/s | 461.12 tok/s | 458.09-464.20 tok/s |    12.59 |
+|   3 req/s | 2.438 req/s | 577.14 tok/s | 556.34-599.55 tok/s |    27.28 |
 
 这里的到达率是 Poisson 分布参数，完成速率是有限样本下的完成请求数 / 整段测试
 时间；两者不会严格相等。尤其 3 req/s 档还包含最后一批积压请求的排空时间。
@@ -856,19 +862,21 @@ done
 TTFT 和逐 token ITL 重建 E2E/TPOT，并合并两轮样本后重新计算。重建值与脚本的
 单轮 E2E 百分位差异小于 0.1ms。每个档位包含 200 个请求和 47,352 个输出 tokens：
 
-| 到达率 | P50 E2E | P50 TTFT | P50 TPOT | P50 ITL |
-| ---: | ---: | ---: | ---: | ---: |
-| 0.5 req/s | 2,671.32ms | 437.60ms | 8.87ms | 4.67ms |
-| 1 req/s | 2,626.32ms | 300.93ms | 11.78ms | 5.64ms |
-| 2 req/s | 5,160.67ms | 425.06ms | 24.59ms | 8.95ms |
-| 3 req/s | 9,407.33ms | 1,329.49ms | 43.75ms | 13.28ms |
 
-| 到达率 | P95 / P99 E2E | P95 / P99 TTFT | P95 / P99 TPOT | P95 / P99 ITL |
-| ---: | ---: | ---: | ---: | ---: |
-| 0.5 req/s | 6,999.13 / 10,491.64ms | 2,191.47 / 3,124.93ms | 31.92 / 131.09ms | 22.51 / 51.28ms |
-| 1 req/s | 8,451.42 / 12,659.81ms | 2,241.13 / 3,049.49ms | 30.27 / 114.16ms | 30.33 / 73.47ms |
-| 2 req/s | 16,636.36 / 23,882.79ms | 2,684.88 / 2,920.10ms | 112.51 / 233.09ms | 54.59 / 236.72ms |
-| 3 req/s | 28,479.37 / 34,387.38ms | 3,207.61 / 3,462.48ms | 216.19 / 387.90ms | 130.52 / 559.35ms |
+|    到达率 |    P50 E2E |   P50 TTFT | P50 TPOT | P50 ITL |
+| --------: | ---------: | ---------: | -------: | ------: |
+| 0.5 req/s | 2,671.32ms |   437.60ms |   8.87ms |  4.67ms |
+|   1 req/s | 2,626.32ms |   300.93ms |  11.78ms |  5.64ms |
+|   2 req/s | 5,160.67ms |   425.06ms |  24.59ms |  8.95ms |
+|   3 req/s | 9,407.33ms | 1,329.49ms |  43.75ms | 13.28ms |
+
+
+|    到达率 |           P95 / P99 E2E |        P95 / P99 TTFT |    P95 / P99 TPOT |     P95 / P99 ITL |
+| --------: | ----------------------: | --------------------: | ----------------: | ----------------: |
+| 0.5 req/s |  6,999.13 / 10,491.64ms | 2,191.47 / 3,124.93ms |  31.92 / 131.09ms |   22.51 / 51.28ms |
+|   1 req/s |  8,451.42 / 12,659.81ms | 2,241.13 / 3,049.49ms |  30.27 / 114.16ms |   30.33 / 73.47ms |
+|   2 req/s | 16,636.36 / 23,882.79ms | 2,684.88 / 2,920.10ms | 112.51 / 233.09ms |  54.59 / 236.72ms |
+|   3 req/s | 28,479.37 / 34,387.38ms | 3,207.61 / 3,462.48ms | 216.19 / 387.90ms | 130.52 / 559.35ms |
 
 指标口径如下：
 
@@ -927,10 +935,11 @@ python -m sglang.benchmark.serving \
   --output-file test-results/bench-serving-long-context-dspark.jsonl
 ```
 
-| 目标 input tokens | 实际 input tokens | 正式请求 | 五轮 median E2E | 五轮范围 | median TTFT | 结果 |
-| ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 8,192 | 8,192 | 25 | 1.727s | 1.220-1.965s | 744.20ms | PASS |
-| 32,768 | 32,768 | 25 | 3.606s | 3.490-4.047s | 2,978.69ms | PASS |
+
+| 目标 input tokens | 实际 input tokens | 正式请求 | 五轮 median E2E |     五轮范围 | median TTFT | 结果 |
+| ----------------: | ----------------: | -------: | --------------: | -----------: | ----------: | ---- |
+|             8,192 |             8,192 |       25 |          1.727s | 1.220-1.965s |    744.20ms | PASS |
+|            32,768 |            32,768 |       25 |          3.606s | 3.490-4.047s |  2,978.69ms | PASS |
 
 每轮的请求中位 E2E 分别为：
 
@@ -965,19 +974,20 @@ token shape、预热、清缓存和五轮中位数为准。
 
 ## 十四、我遇到和重点防范的问题
 
-| 现象 | 根因或处理方式 |
-| --- | --- |
-| SGLang commit mismatch | Patch 依赖内部 API，切回固定 commit，不跳过正式检查 |
-| 模型缺 shard 或权重 | 先运行 original/converted 严格 validator |
-| 原生 MXFP4 报 SM90/SM120 | A100 patch 未加载，检查 `PYTHONPATH` 和环境变量 |
-| 服务 ready 但输出错误 | 检查 TP=4 Q-head padding/local-head 选择逻辑 |
-| DSpark accept rate 接近 0 | 确认 `mtp.0.main_proj` 保持 BF16，没有进入 FP8 Marlin |
-| 首个请求像卡死 | DSpark 必须执行内建 warmup，并等待 JIT/CUDA Graph 完成 |
-| OOM | 确认无残留进程，从 `mem-fraction-static=0.70` 开始向下调 |
-| NCCL/Bus error | 检查四卡可见性和 `/dev/shm`，必要时提高到 64GB |
-| Responses 返回 400 | 检查路径 `/v1/responses` 和当前 `tool_choice` schema |
+
+| 现象                      | 根因或处理方式                                                |
+| ------------------------- | ------------------------------------------------------------- |
+| SGLang commit mismatch    | Patch 依赖内部 API，切回固定 commit，不跳过正式检查           |
+| 模型缺 shard 或权重       | 先运行 original/converted 严格 validator                      |
+| 原生 MXFP4 报 SM90/SM120  | A100 patch 未加载，检查`PYTHONPATH` 和环境变量                |
+| 服务 ready 但输出错误     | 检查 TP=4 Q-head padding/local-head 选择逻辑                  |
+| DSpark accept rate 接近 0 | 确认`mtp.0.main_proj` 保持 BF16，没有进入 FP8 Marlin          |
+| 首个请求像卡死            | DSpark 必须执行内建 warmup，并等待 JIT/CUDA Graph 完成        |
+| OOM                       | 确认无残留进程，从`mem-fraction-static=0.70` 开始向下调       |
+| NCCL/Bus error            | 检查四卡可见性和`/dev/shm`，必要时提高到 64GB                 |
+| Responses 返回 400        | 检查路径`/v1/responses` 和当前 `tool_choice` schema           |
 | DSpark 强制工具调用报 400 | Grammar constraint 与 speculative decoding 不兼容，切基础模式 |
-| Anthropic system 报 400 | `system` 应放请求顶层，不能放进 messages 数组 |
+| Anthropic system 报 400   | `system` 应放请求顶层，不能放进 messages 数组                 |
 
 当前环境 `/dev/shm=10GB` 已通过 TP=4 实测，但换到其他容器或调度系统后，如果
 出现 NCCL shared-memory 错误，仍建议将共享内存提高到至少 64GB。
@@ -1082,23 +1092,23 @@ Monkeypatch 的优点是改动边界清晰，不污染 SGLang 源码；代价是
 
 以后重新部署时，我会按下面的顺序检查：
 
-- [ ] GPU 是 4 x A100 SM80，`CUDA_VISIBLE_DEVICES=0,1,2,3`。
-- [ ] SGLang commit 和 version 精确匹配。
-- [ ] 原始 checkpoint validator 通过。
-- [ ] 转换后 checkpoint validator 通过。
-- [ ] API key 文件权限为 `0600`。
-- [ ] `ENABLE_SGLANG_DSV4_A100_PATCH=1`。
-- [ ] Compatibility check 返回 PASS。
-- [ ] 四个 TP rank 都加载了 `mxfp4_int8` experts。
-- [ ] 日志显示 BF16 attention cache + INT8 indexer cache。
-- [ ] DSpark 模式完成 JIT 和 CUDA Graph warmup。
-- [ ] 确定性短生成内容正确。
-- [ ] Chat、Responses、Anthropic、stream 和 tool loop 通过。
-- [ ] 未鉴权请求返回 401。
-- [ ] 8K/32K context 和并发 1/4/8 通过。
-- [ ] ShareGPT open-loop rate sweep 的成功率和 TTFT/TPOT/ITL 符合目标 SLO。
-- [ ] DSpark accept rate 明显大于 0。
-- [ ] 日志没有明文 key、missing weight、CUDA 或 NCCL traceback。
+- [ ]  GPU 是 4 x A100 SM80，`CUDA_VISIBLE_DEVICES=0,1,2,3`。
+- [ ]  SGLang commit 和 version 精确匹配。
+- [ ]  原始 checkpoint validator 通过。
+- [ ]  转换后 checkpoint validator 通过。
+- [ ]  API key 文件权限为 `0600`。
+- [ ]  `ENABLE_SGLANG_DSV4_A100_PATCH=1`。
+- [ ]  Compatibility check 返回 PASS。
+- [ ]  四个 TP rank 都加载了 `mxfp4_int8` experts。
+- [ ]  日志显示 BF16 attention cache + INT8 indexer cache。
+- [ ]  DSpark 模式完成 JIT 和 CUDA Graph warmup。
+- [ ]  确定性短生成内容正确。
+- [ ]  Chat、Responses、Anthropic、stream 和 tool loop 通过。
+- [ ]  未鉴权请求返回 401。
+- [ ]  8K/32K context 和并发 1/4/8 通过。
+- [ ]  ShareGPT open-loop rate sweep 的成功率和 TTFT/TPOT/ITL 符合目标 SLO。
+- [ ]  DSpark accept rate 明显大于 0。
+- [ ]  日志没有明文 key、missing weight、CUDA 或 NCCL traceback。
 
 ## 结语
 

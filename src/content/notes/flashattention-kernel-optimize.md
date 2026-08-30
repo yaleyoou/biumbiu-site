@@ -9,7 +9,7 @@ tags: ["FlashAttention", "Triton-Ascend", "昇腾", "算子优化"]
 featured: true
 order: 10
 draft: false
-category: "Kernel engineering"
+category: "AI Infra"
 ---
 2026 年，我们参加了全国大学生计算机系统能力大赛编译系统设计赛（华为毕昇杯）。
 赛题围绕 FlashAttention 算子展开：初赛主要优化 Forward，决赛主要优化 Backward。

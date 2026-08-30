@@ -6,46 +6,85 @@ import { ArrowUpRight } from "lucide-astro";
 import PageIntro from "../../components/PageIntro.astro";
 import TagLink from "../../components/TagLink.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { byNewest, contentPath, formatDate, isPublished } from "../../lib/content";
+import { byNewest, contentPath, estimateReadingMinutes, formatDate, isPublished } from "../../lib/content";
 
 const notes = (await getCollection("notes", isPublished)).sort(byNewest);
+const monthLabels = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+const notesWithMeta = notes.map((entry, index) => ({
+  entry,
+  index,
+  readingMinutes: estimateReadingMinutes(entry.body ?? "")
+}));
+const groupedNotes = [...new Set(notesWithMeta.map(({ entry }) => entry.data.date.getFullYear()))].map((year) => ({
+  year,
+  months: [...new Set(
+    notesWithMeta
+      .filter(({ entry }) => entry.data.date.getFullYear() === year)
+      .map(({ entry }) => entry.data.date.getMonth())
+  )].map((month) => ({
+    month,
+    label: monthLabels[month],
+    notes: notesWithMeta.filter(({ entry }) =>
+      entry.data.date.getFullYear() === year && entry.data.date.getMonth() === month
+    )
+  }))
+}));
 ---
 
 <SiteLayout title="笔记" description="关于系统、AI 和构建过程的现场笔记。">
-  <PageIntro eyebrow="Field notes" title="笔记" description="Things I learned, built, broke, and figured out." />
+  <div class="notes-page">
+    <PageIntro title="笔记" description="记录做过的事情、踩过的坑和后来想明白的问题。" />
 
-  <section class="content-section shell">
-    <div class="notes-list">
-      {notes.map(({ id, data }, index) => (
-        <article class="note-list-row">
-          <div class="note-list-meta">
-            <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
-            <span>{data.category}</span>
-          </div>
-          <a class="note-list-media" href={contentPath("notes", id)} aria-label={`打开${data.title}`} tabindex="-1">
-            <Image
-              src={data.image as ImageMetadata}
-              alt={data.imageAlt}
-              widths={[180, 360, 540]}
-              sizes="(max-width: 680px) 104px, 190px"
-              format="webp"
-              loading={index === 0 ? "eager" : "lazy"}
-              fetchpriority={index === 0 ? "high" : "auto"}
-              decoding="async"
-            />
-          </a>
-          <div class="note-list-copy">
-            <h2><a href={contentPath("notes", id)}>{data.cardTitle ?? data.title}</a></h2>
-            <p>{data.description}</p>
-            <div class="tag-row">
-              {data.tags.map((tag) => <TagLink tag={tag} />)}
+    <section class="content-section shell">
+      <div class="notes-list">
+        {groupedNotes.map(({ year, months }) => (
+          <section class="note-year-group" aria-labelledby={`notes-year-${year}`}>
+            <h2 class="note-year-heading" id={`notes-year-${year}`}>{year}</h2>
+            <div class="note-year-months">
+              {months.map(({ month, label, notes: monthNotes }) => (
+                <section class="note-month-group" aria-labelledby={`notes-month-${year}-${month + 1}`}>
+                  <h3 class="note-month-heading" id={`notes-month-${year}-${month + 1}`}>
+                    <span>{label}</span><small>{monthNotes.length}</small>
+                  </h3>
+                  <div class="note-month-entries">
+                    {monthNotes.map(({ entry: { id, data }, index, readingMinutes }) => (
+                      <article class="note-list-row">
+                        <div class="note-list-meta">
+                          <time datetime={data.date.toISOString()}>{formatDate(data.date)}</time>
+                          <span class="note-list-category">{data.category}</span>
+                          <span class="note-list-reading">约 {readingMinutes} 分钟</span>
+                        </div>
+                        <a class="note-list-media" href={contentPath("notes", id)} aria-label={`打开${data.title}`} tabindex="-1">
+                          <Image
+                            src={data.image as ImageMetadata}
+                            alt={data.imageAlt}
+                            widths={[180, 360, 540]}
+                            sizes="190px"
+                            format="webp"
+                            loading={index === 0 ? "eager" : "lazy"}
+                            fetchpriority={index === 0 ? "high" : "auto"}
+                            decoding="async"
+                          />
+                        </a>
+                        <div class="note-list-copy">
+                          <h2><a href={contentPath("notes", id)}>{data.cardTitle ?? data.title}</a></h2>
+                          <p>{data.description}</p>
+                          <div class="tag-row">
+                            {data.tags.map((tag) => <TagLink tag={tag} />)}
+                          </div>
+                        </div>
+                        <a class="note-list-arrow" href={contentPath("notes", id)} aria-label={`打开${data.title}`}>
+                          <ArrowUpRight size={18} aria-hidden="true" />
+                        </a>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ))}
             </div>
-          </div>
-          <a class="note-list-arrow" href={contentPath("notes", id)} aria-label={`打开${data.title}`}>
-            <ArrowUpRight size={18} aria-hidden="true" />
-          </a>
-        </article>
-      ))}
-    </div>
-  </section>
+          </section>
+        ))}
+      </div>
+    </section>
+  </div>
 </SiteLayout>

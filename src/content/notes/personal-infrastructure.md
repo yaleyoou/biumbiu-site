@@ -3,14 +3,13 @@ title: "从域名和 VPS 到可用节点：一次 3x-ui 部署记录"
 cardTitle: "从零搭建一个美国节点"
 description: "复盘从 Cloudflare DNS、美国 VPS、3x-ui 到 VLESS REALITY 节点、订阅和性能调优的完整过程。"
 date: 2026-07-30
-category: "Field note"
+category: "Build Log"
 image: "../../assets/images/project-network-1200.webp"
 imageAlt: "服务器网络与终端连接场景"
 tags: ["Cloudflare", "VPS", "3x-ui", "Xray"]
 featured: true
 order: 2
 ---
-
 这次的目标并不只是让客户端第一次显示“已连接”，而是搭出一个职责清楚、能够排错、以后也敢继续维护的个人节点。日常交流里经常把它叫作 VPN，但更准确地说，它是由 Xray 提供的代理节点。本文只记录本人设备的合法远程访问与网络技术学习，请遵守所在地法律和服务商条款。
 
 > 客户端 → 节点域名 → 美国 VPS → Xray Core → 美国出口 IP
