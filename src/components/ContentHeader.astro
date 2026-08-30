@@ -1,7 +1,7 @@
 ---
 import { Picture } from "astro:assets";
 import type { ImageMetadata } from "astro";
-import { ArrowLeft, CalendarDays, Clock3 } from "lucide-astro";
+import { ArrowLeft } from "lucide-astro";
 import { formatDate } from "../lib/content";
 import TagLink from "./TagLink.astro";
 import VisitCounter from "./VisitCounter.astro";
@@ -36,7 +36,6 @@ const {
   image,
   imageAlt,
   tags,
-  category,
   period,
   role,
   status,
@@ -49,13 +48,17 @@ const {
 const isProject = collection === "projects";
 const backHref = isProject ? "/projects/" : "/notes/";
 const backLabel = isProject ? "返回项目" : "返回笔记";
-const eyebrow = isProject ? `${period} / ${role}` : `${category} / ${formatDate(date)}`;
+const statusLabels = {
+  Ongoing: "进行中",
+  Completed: "已完成",
+  Maintained: "持续维护"
+};
 const facts = isProject
   ? [
-      ["Status", status],
-      ["Period", period],
-      ["Role", role],
-      ["Stack", stack]
+      ["状态", status ? statusLabels[status as keyof typeof statusLabels] : undefined],
+      ["时间", period],
+      ["角色", role],
+      ["技术栈", stack]
     ].filter((fact): fact is [string, string] => Boolean(fact[1]))
   : [];
 ---
@@ -67,20 +70,18 @@ const facts = isProject
 
   <div class="content-hero-grid">
     <div class="content-hero-copy">
-      <p class="eyebrow">{eyebrow}</p>
       <h1>{displayTitle ?? title}</h1>
       <p class="content-deck">{description}</p>
 
       <div class="content-meta-row">
-        {!isProject && (
-          <span><CalendarDays size={14} aria-hidden="true" /> {formatDate(date)}</span>
-        )}
-        {readingMinutes && <span><Clock3 size={14} aria-hidden="true" /> 约 {readingMinutes} 分钟</span>}
+        <time datetime={date.toISOString()}>{formatDate(date)}</time>
+        {readingMinutes && <span>约 {readingMinutes} 分钟</span>}
         {updated && <span>更新于 {formatDate(updated)}</span>}
         <VisitCounter scope="page" label={isProject ? "浏览" : "阅读"} />
-        <div class="tag-row" aria-label="标签">
-          {tags.map((tag) => <TagLink tag={tag} />)}
-        </div>
+      </div>
+
+      <div class="tag-row content-hero-tags" aria-label="标签">
+        {tags.map((tag) => <TagLink tag={tag} />)}
       </div>
     </div>
 

@@ -4,15 +4,13 @@ import type { ImageMetadata } from "astro";
 import type { CollectionEntry } from "astro:content";
 import { ArrowUpRight } from "lucide-astro";
 import { contentPath } from "../lib/content";
-import TagLink from "./TagLink.astro";
 
 interface Props {
   entry: CollectionEntry<"projects">;
-  index: number;
-  lead?: boolean;
+  priority?: boolean;
 }
 
-const { entry, index, lead = false } = Astro.props;
+const { entry, priority = false } = Astro.props;
 const { id, data } = entry;
 const href = contentPath("projects", id);
 const title = data.cardTitle ?? data.title;
@@ -25,49 +23,36 @@ const statusKey = data.status.toLocaleLowerCase("en-US");
 const stack = data.stack ?? data.tags.slice(0, 3).join(" / ");
 ---
 
-<li class:list={["project-entry-item", { "is-lead": lead }]}>
-  <article class="project-entry" data-project-entry>
-    <span class="project-entry-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-
-    <div class="project-entry-copy">
-      <p class="project-entry-meta">
-        <span data-status={statusKey}>{statusLabels[data.status]}</span>
-        <span>{data.period}</span>
-      </p>
-      <h2><a href={href}>{title}</a></h2>
-      <p class="project-entry-description">{data.description}</p>
-    </div>
-
+<li class="project-entry-item">
+  <a class="project-entry" href={href} aria-label={`查看项目：${title}`} data-project-entry>
     <figure class:list={["project-entry-media", { "project-entry-media-contain": data.containImage, "project-entry-media-dark": data.darkImage }]}>
       <Picture
         src={data.image as ImageMetadata}
         alt={data.imageAlt}
         layout="none"
-        widths={[320, 480, 768, 1200]}
-        sizes="(min-width: 1024px) 40vw, 100vw"
+        widths={[320, 480, 768]}
+        sizes="(min-width: 1024px) 260px, (min-width: 681px) 220px, 100vw"
         formats={["avif", "webp"]}
         fallbackFormat="webp"
-        loading={lead ? "eager" : "lazy"}
-        fetchpriority={lead ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
+        fetchpriority={priority ? "high" : "auto"}
         decoding="async"
       />
     </figure>
 
-    <dl class="project-entry-facts">
-      <div>
-        <dt>角色</dt>
-        <dd>{data.role}</dd>
-      </div>
-      <div>
-        <dt>技术栈</dt>
-        <dd>{stack}</dd>
-      </div>
-    </dl>
-
-    <ul class="project-entry-tags" aria-label={`${title} 的标签`}>
-      {data.tags.map((tag) => <li><TagLink tag={tag} /></li>)}
-    </ul>
+    <div class="project-entry-copy">
+      <p class="project-entry-meta">
+        <span>{data.period}</span>
+        <span data-status={statusKey}>{statusLabels[data.status]}</span>
+      </p>
+      <h2>{title}</h2>
+      <p class="project-entry-description">{data.description}</p>
+      <p class="project-entry-details">
+        <span>{data.role}</span>
+        {stack && <span>{stack}</span>}
+      </p>
+    </div>
 
     <ArrowUpRight class="project-entry-arrow" size={20} strokeWidth={1.7} aria-hidden="true" />
-  </article>
+  </a>
 </li>

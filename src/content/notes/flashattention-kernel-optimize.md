@@ -1,17 +1,16 @@
 ---
 title: "把 FlashAttention 搬上昇腾：Triton-Ascend CV Pipeline 优化实战"
 cardTitle: "Triton-Ascend FlashAttention 优化实战"
-description: "我们基于 Triton-Ascend 构建昇腾亲和算子，通过细粒度 CV 流水编排将 Cube 利用率提升到 90%+。"
+description: "基于 Triton-Ascend 构建昇腾亲和算子，针对FlashAttention fwd&bwd算子展开优化，通过细粒度 CV 流水编排等优化方式，将 Cube 利用率提升到 90%+。"
 date: 2026-08-30
 image: "../../assets/images/flashattention-kernel-award-cover-v2.jpg"
 imageAlt: "2026 全国大学生计算机系统能力大赛颁奖典礼上的 Triton-Ascend 算子项目展示"
-tags: ["FlashAttention", "Triton-Ascend", "昇腾", "算子优化", "编译系统"]
+tags: ["FlashAttention", "Triton-Ascend", "昇腾", "算子优化"]
 featured: true
 order: 10
 draft: false
 category: "Kernel engineering"
 ---
-
 2026 年，我们参加了全国大学生计算机系统能力大赛编译系统设计赛（华为毕昇杯）。
 赛题围绕 FlashAttention 算子展开：初赛主要优化 Forward，决赛主要优化 Backward。
 
