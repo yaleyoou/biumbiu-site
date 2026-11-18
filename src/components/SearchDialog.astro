@@ -1,9 +1,14 @@
 ---
 import { X } from "lucide-astro";
 import SearchInterface from "./SearchInterface.astro";
+
+interface Props {
+  phoneEnglishMedia?: string;
+}
+const { phoneEnglishMedia } = Astro.props;
 ---
 
-<dialog class="site-search-dialog" aria-labelledby="site-search-dialog-title" data-search-dialog>
+<dialog class="site-search-dialog" aria-labelledby="site-search-dialog-title" data-search-dialog data-phone-english-media={phoneEnglishMedia}>
   <section class="site-search-sheet">
     <div class="site-search-sheet-inner">
       <header class="site-search-dialog-header">

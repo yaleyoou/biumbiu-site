@@ -1,8 +1,11 @@
 ---
 import { Moon, Sun } from "lucide-astro";
+
+interface Props { label?: string; }
+const { label = "切换深浅色主题" } = Astro.props;
 ---
 
-<button class="theme-toggle" type="button" aria-label="切换深浅色主题" title="切换主题" data-theme-toggle>
+<button class="theme-toggle" type="button" aria-label={label} title={label} data-theme-toggle>
   <Sun class="theme-icon theme-icon-sun" size={19} strokeWidth={1.8} aria-hidden="true" />
   <Moon class="theme-icon theme-icon-moon" size={19} strokeWidth={1.8} aria-hidden="true" />
 </button>

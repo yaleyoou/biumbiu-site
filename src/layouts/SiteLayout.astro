@@ -16,6 +16,7 @@ interface Props {
   imageAlt?: string;
   lang?: string;
   portfolio?: boolean;
+  phoneEnglishMedia?: string;
   standalone?: boolean;
   article?: boolean;
   publishedTime?: Date;
@@ -31,6 +32,7 @@ const {
   imageAlt = description,
   lang = "zh-CN",
   portfolio = false,
+  phoneEnglishMedia,
   standalone = false,
   article = false,
   publishedTime,
@@ -110,6 +112,12 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
 <html lang={lang}>
   <head>
     <meta charset="UTF-8" />
+    {phoneEnglishMedia && <script define:vars={{ phoneEnglishMedia, lang }}>
+      const viewport = window.matchMedia(phoneEnglishMedia);
+      const setLanguage = () => { document.documentElement.lang = viewport.matches ? "en" : lang; };
+      setLanguage();
+      viewport.addEventListener("change", setLanguage);
+    </script>}
     <meta name="viewport" content="width=device-width" />
     <meta name="theme-color" content="#121b18" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f4f6f1" media="(prefers-color-scheme: light)" />
@@ -157,12 +165,12 @@ const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": stru
     <title>{pageTitle}</title>
   </head>
   <body class:list={{ "portfolio-body": portfolio, "standalone-body": standalone, "article-body": article }}>
-    <a class="skip-link" href="#main">跳到正文</a>
+    <a class="skip-link" href="#main">{portfolio ? <><span class="wide-copy">跳到正文</span><span class="phone-only" lang="en">Skip to content</span></> : "跳到正文"}</a>
     {!portfolio && !standalone && <Header currentPath={Astro.url.pathname} />}
     <main id="main">
       <slot />
     </main>
-    {!standalone && <SearchDialog />}
+    {!standalone && <SearchDialog phoneEnglishMedia={phoneEnglishMedia} />}
     {!portfolio && !standalone && <Footer />}
   </body>
 </html>

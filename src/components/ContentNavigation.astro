@@ -1,5 +1,6 @@
 ---
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-astro";
+import TagLink from "./TagLink.astro";
 
 export interface NavigationItem {
   href: string;
@@ -8,6 +9,7 @@ export interface NavigationItem {
 }
 
 interface Props {
+  tags: string[];
   previous?: NavigationItem;
   next?: NavigationItem;
   related?: NavigationItem[];
@@ -17,6 +19,7 @@ interface Props {
 }
 
 const {
+  tags,
   previous,
   next,
   related = [],
@@ -25,6 +28,12 @@ const {
   relatedLabel = "相关文章"
 } = Astro.props;
 ---
+
+{tags.length > 0 && (
+  <nav class="content-end-tags" aria-label="文章标签">
+    {tags.map((tag) => <TagLink tag={tag} />)}
+  </nav>
+)}
 
 {(previous || next || related.length > 0) && (
   <section class="content-end" aria-label="继续阅读">

@@ -15,6 +15,37 @@ type IndexedSearchRecord = SearchRecord & {
   normalizedContent: string;
 };
 
+const messages = {
+  en: {
+    heading: "Site search",
+    placeholder: "Search notes, projects, or topics",
+    close: "Close search",
+    clear: "Clear search",
+    recent: "Recently updated",
+    resultCount: (count: number) => count === 1 ? "1 result" : `${count} results`,
+    noMatches: (query: string) => `No results for “${query}”`,
+    noContent: "No content to search yet",
+    loading: "Loading search index…",
+    unavailable: "Search is temporarily unavailable",
+    loadError: "The search index couldn’t load. Please try again.",
+    types: { "笔记": "Note", "项目": "Project" }
+  },
+  zh: {
+    heading: "站内搜索",
+    placeholder: "搜索笔记、项目或技术主题",
+    close: "关闭搜索",
+    clear: "清除搜索",
+    recent: "最近更新",
+    resultCount: (count: number) => `${count} 条结果`,
+    noMatches: (query: string) => `没有找到“${query}”`,
+    noContent: "暂无可搜索内容",
+    loading: "正在载入索引",
+    unavailable: "搜索暂时不可用",
+    loadError: "索引加载失败，请稍后重试",
+    types: { "笔记": "笔记", "项目": "项目" }
+  }
+};
+
 let searchIndexPromise: Promise<IndexedSearchRecord[]> | null = null;
 let searchInstance = 0;
 
@@ -148,6 +179,7 @@ const createResult = (
   record: IndexedSearchRecord,
   terms: string[],
   resultId: string,
+  typeLabel: string,
   onActivate: (link: HTMLAnchorElement) => void
 ) => {
   const item = document.createElement("li");
@@ -161,7 +193,7 @@ const createResult = (
   const meta = document.createElement("div");
   meta.className = "site-search-result-meta";
   const type = document.createElement("span");
-  type.textContent = record.type;
+  type.textContent = typeLabel;
   const date = document.createElement("time");
   date.dateTime = record.date;
   date.textContent = record.date.replaceAll("-", ".");
@@ -219,6 +251,10 @@ export function mountSiteSearch(root: HTMLElement) {
   let resultLinks: HTMLAnchorElement[] = [];
   let activeIndex = -1;
   let renderFrame = 0;
+  const dialog = root.closest<HTMLDialogElement>("[data-search-dialog]");
+  const englishMedia = dialog?.dataset.phoneEnglishMedia;
+  const viewport = englishMedia ? window.matchMedia(englishMedia) : null;
+  let copy = viewport?.matches ? messages.en : messages.zh;
 
   input.setAttribute("aria-controls", `${instanceId}-results`);
   results.id = `${instanceId}-results`;
@@ -245,11 +281,11 @@ export function mountSiteSearch(root: HTMLElement) {
     results.replaceChildren();
     empty.hidden = matches.length > 0;
     clearButton.hidden = query.length === 0;
-    summary.textContent = query ? `${matches.length} 条结果` : "最近更新";
-    empty.textContent = query ? `没有找到“${query}”` : "暂无可搜索内容";
+    summary.textContent = query ? copy.resultCount(matches.length) : copy.recent;
+    empty.textContent = query ? copy.noMatches(query) : copy.noContent;
 
     matches.forEach((record, index) => {
-      const item = createResult(record, terms, `${instanceId}-result-${index}`, (link) => {
+      const item = createResult(record, terms, `${instanceId}-result-${index}`, copy.types[record.type], (link) => {
         const nextIndex = resultLinks.indexOf(link);
         if (nextIndex >= 0) setActiveResult(nextIndex);
       });
@@ -282,18 +318,41 @@ export function mountSiteSearch(root: HTMLElement) {
       return;
     }
 
-    summary.textContent = "正在载入索引";
+    summary.textContent = copy.loading;
     empty.hidden = true;
     try {
       records = await loadSearchIndex();
       renderResults();
     } catch (error) {
-      summary.textContent = "搜索暂时不可用";
-      empty.textContent = "索引加载失败，请稍后重试";
+      summary.textContent = copy.unavailable;
+      empty.textContent = copy.loadError;
       empty.hidden = false;
       console.error("Unable to load the site search index.", error);
     }
   };
+
+  if (dialog && viewport) {
+    const heading = dialog.querySelector<HTMLElement>("#site-search-dialog-title");
+    const closeButton = dialog.querySelector<HTMLButtonElement>("[data-search-close]");
+    const label = input.labels?.[0];
+    const updateLanguage = () => {
+      copy = viewport.matches ? messages.en : messages.zh;
+      if (heading) heading.textContent = copy.heading;
+      if (label) label.textContent = copy.heading;
+      input.placeholder = copy.placeholder;
+      clearButton.title = copy.clear;
+      clearButton.setAttribute("aria-label", copy.clear);
+      if (closeButton) {
+        closeButton.title = copy.close;
+        closeButton.setAttribute("aria-label", copy.close);
+      }
+    };
+    updateLanguage();
+    viewport.addEventListener("change", () => {
+      updateLanguage();
+      if (dialog.open) void activate(false);
+    });
+  }
 
   input.addEventListener("input", requestResultsRender);
   input.addEventListener("keydown", (event) => {

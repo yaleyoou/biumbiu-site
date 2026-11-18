@@ -48,7 +48,6 @@ const projects = (await getCollection("projects", isPublished))
   }));
 
 const notes = (await getCollection("notes", isPublished))
-  .filter(({ data }) => data.featured)
   .sort(byNewest)
   .slice(0, 4)
   .map(({ id, data }) => ({
@@ -59,22 +58,33 @@ const notes = (await getCollection("notes", isPublished))
   }));
 
 const currentYear = new Date().getFullYear();
+const heroMedia = "(width > 680px) and (not ((orientation: landscape) and (pointer: coarse) and (height <= 600px)))";
 ---
 
-<SiteLayout portfolio>
-  <link slot="head" rel="preload" as="fetch" href="/models/myself.glb" type="model/gltf-binary" crossorigin="anonymous" fetchpriority="low" />
-  <link slot="head" rel="preload" as="image" href="/images/myself-poster.webp" type="image/webp" fetchpriority="high" />
+<SiteLayout portfolio phoneEnglishMedia="(max-width: 680px), (orientation: landscape) and (pointer: coarse) and (max-height: 600px)">
+  <link slot="head" rel="preload" as="fetch" href="/models/myself.glb" type="model/gltf-binary" crossorigin="anonymous" fetchpriority="low" media={heroMedia} />
+  <link slot="head" rel="preload" as="image" href="/images/myself-poster.webp" type="image/webp" fetchpriority="high" media={heroMedia} />
   <div class="portfolio-page" data-spotlight>
     <div class="portfolio-shell">
+      <header class="phone-only phone-masthead">
+        <nav aria-label="Main navigation">
+          <a href="/" aria-current="page">Home</a>
+          <a href="/notes/">Notes</a>
+          <a href="/projects/">Projects</a>
+        </nav>
+        <div class="phone-tools">
+          <a href="/search/" aria-label="Search" data-search-trigger><Search size={18} /></a>
+          <ThemeToggle label="Switch color theme" />
+        </div>
+      </header>
       <aside class="profile-panel">
         <div class="profile-top reveal">
-          <a class="profile-avatar" href="/" aria-label="BiumBiu 首页">
-            <Image src={avatar} alt="BiumBiu 的头像" width={120} height={120} format="webp" layout="none" loading="eager" decoding="async" />
+          <a class="profile-avatar" href="/" aria-label="BiumBiu home">
+            <Image src={avatar} alt="BiumBiu" width={120} height={120} format="webp" layout="none" loading="eager" decoding="async" />
           </a>
           <h1>BiumBiu</h1>
-          <h2>CS GRADUATE STUDENT · USTC</h2>
-          <p>I study and build AI systems — from LLM inference and AI infrastructure to agents.</p>
-
+          <h2><span class="wide-copy">CS GRADUATE STUDENT · USTC</span><span class="phone-only">CS graduate student at USTC</span></h2>
+          <p class="wide-copy">I study and build AI systems — from LLM inference and AI infrastructure to agents.</p>
           <nav class="section-nav" aria-label="首页章节">
             <a href="#about" data-section-link="about">关于</a>
             <a href="#focus" data-section-link="focus">近况</a>
@@ -83,7 +93,7 @@ const currentYear = new Date().getFullYear();
           </nav>
         </div>
 
-        <div class="profile-socials" aria-label="外部链接">
+        <div class="profile-socials" aria-label="站点工具与联系方式">
           <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer" aria-label="GitHub" title="GitHub"><Github size={22} /></a>
           <a href="mailto:yaleyoou@gmail.com" aria-label="Email" title="Email"><Mail size={22} /></a>
           <a href="/notes/" aria-label="笔记" title="笔记"><BookOpen size={22} /></a>
@@ -94,7 +104,7 @@ const currentYear = new Date().getFullYear();
 
       <div class="portfolio-content">
         <section class="hero" aria-label="BiumBiu 个人形象">
-          <div class="hero-visual" data-hero-visual>
+          <div class="hero-visual" data-hero-visual data-media={heroMedia}>
             <canvas class="hero-signal" data-hero-signal aria-hidden="true"></canvas>
             <span class="hero-spark hero-spark-one" data-hero-spark aria-hidden="true"></span>
             <span class="hero-spark hero-spark-two" data-hero-spark aria-hidden="true"></span>
@@ -120,11 +130,29 @@ const currentYear = new Date().getFullYear();
         </section>
 
         <section class="portfolio-section about-section" id="about" data-section="about">
+          <div class="phone-only phone-about">
+            <h2 lang="en">About Me</h2>
+            <p>I like turning ideas from research papers into code and testing how they hold up in real systems.</p>
+            <p>Away from the keyboard, I play basketball, practice guitar, and take my camera on walks.</p>
+            <div class="author-links">
+              <a href="https://github.com/yaleyoou" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={13} aria-hidden="true" /></a>
+              <a href="mailto:yaleyoou@gmail.com">Email <ArrowUpRight size={13} aria-hidden="true" /></a>
+            </div>
+          </div>
           <div class="mobile-section-title" aria-hidden="true">关于</div>
           <h2 class="about-heading">Hi there! I’m BiumBiu.</h2>
           <p>I’m a CS graduate student at USTC, interested in how intelligent systems work and how new ideas become systems that hold up in practice.</p>
           <p>These days, I’m focused on LLM inference, AI infrastructure, and agent systems. I enjoy moving between papers, experiments, and engineering practice.</p>
           <p>Away from the screen, I play basketball, practice guitar, and take photos. This site is where I keep track of what I’m learning, building, and changing my mind about.</p>
+        </section>
+
+        <section class="phone-only research-section" aria-labelledby="research-title">
+          <h2 id="research-title" lang="en">Research Interests</h2>
+          <ul>
+            <li><strong>LLM inference</strong><p>How inference engines schedule requests and balance throughput, latency, and memory use.</p></li>
+            <li><strong>AI infrastructure</strong><p>How faster kernels translate into faster model serving.</p></li>
+            <li><strong>Multi-agent systems</strong><p>How agents work together to review papers, run experiments, and write up results.</p></li>
+          </ul>
         </section>
 
         <section class="portfolio-section" id="focus" data-section="focus">
@@ -150,7 +178,7 @@ const currentYear = new Date().getFullYear();
           <div class="row-group">
             {projects.map((project) => (
               <article class="project-compact-row focus-row">
-                <a class:list={["project-thumb", { "project-thumb-contain": project.contain, "project-thumb-dark": project.dark }]} href={project.href} aria-label={`查看${project.title}`}><Picture src={project.image as ImageMetadata} alt="" layout="none" widths={[160, 252, 320, 400, 640]} sizes="(min-width: 681px) 126px, 320px" formats={["avif", "webp"]} fallbackFormat="webp" loading="lazy" decoding="async" /></a>
+                <a class:list={["project-thumb", { "project-thumb-contain": project.contain, "project-thumb-dark": project.dark }]} href={project.href} aria-label={`查看${project.title}`}><Picture src={project.image as ImageMetadata} alt="" layout="none" widths={[160, 252, 320, 400, 640]} sizes="(max-width: 680px) 88px, 126px" formats={["avif", "webp"]} fallbackFormat="webp" loading="lazy" decoding="async" /></a>
                 <div class="row-copy">
                   <h3><a href={project.href}>{project.title} <ArrowUpRight size={15} aria-hidden="true" /></a></h3>
                   <p>{project.copy}</p>
@@ -169,7 +197,7 @@ const currentYear = new Date().getFullYear();
               <a class="writing-row focus-row" href={note.href}>
                 <div class="writing-thumb"><Picture src={note.image as ImageMetadata} alt="" layout="none" widths={[160, 192, 252, 288, 320]} sizes="(min-width: 681px) 126px, 96px" formats={["avif", "webp"]} fallbackFormat="webp" loading="lazy" decoding="async" /></div>
                 <div class="row-copy">
-                  <p class="row-date">{note.date}</p>
+                  <time class="row-date" datetime={note.date}>{note.date}</time>
                   <h3>{note.title} <ArrowUpRight size={15} aria-hidden="true" /></h3>
                 </div>
               </a>
@@ -187,7 +215,7 @@ const currentYear = new Date().getFullYear();
 
         <footer class="portfolio-footer">
           <!-- <p>以 Astro 构建，部署于 Cloudflare Pages。</p> -->
-          <p>© {currentYear} BiumBiu · <VisitCounter /></p>
+          <p>© {currentYear} BiumBiu · <span class="wide-copy"><VisitCounter /></span><span class="phone-only"><VisitCounter label="Visits" suffix="" /></span></p>
         </footer>
       </div>
     </div>
@@ -207,19 +235,33 @@ const currentYear = new Date().getFullYear();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const heroModel = document.querySelector<HTMLElement>("[data-hero-model]");
 
-    import("../client/hero-model")
-      .then(({ mountHeroModel }) => mountHeroModel(heroModel))
-      .catch((error) => {
-        if (heroModel) {
-          heroModel.dataset.state = "error";
-          heroModel.setAttribute("aria-busy", "false");
-        }
-        console.error("Unable to load the hero model runtime.", error);
-      });
+    if (heroVisual?.dataset.media) {
+      const heroViewport = window.matchMedia(heroVisual.dataset.media);
+      const loadVisibleHero = () => {
+        if (!heroViewport.matches) return;
 
-    import("../client/hero-signal")
-      .then(({ mountHeroSignal }) => mountHeroSignal(heroSignal))
-      .catch((error) => console.error("Unable to load the interactive signal field.", error));
+        import("../client/hero-model")
+          .then(({ mountHeroModel }) => {
+            if (heroViewport.matches) mountHeroModel(heroModel);
+          })
+          .catch((error) => {
+            if (heroModel) {
+              heroModel.dataset.state = "error";
+              heroModel.setAttribute("aria-busy", "false");
+            }
+            console.error("Unable to load the hero model runtime.", error);
+          });
+
+        import("../client/hero-signal")
+          .then(({ mountHeroSignal }) => {
+            if (heroViewport.matches) mountHeroSignal(heroSignal);
+          })
+          .catch((error) => console.error("Unable to load the interactive signal field.", error));
+      };
+
+      heroViewport.addEventListener("change", loadVisibleHero);
+      loadVisibleHero();
+    }
 
     heroVisual?.addEventListener("dragstart", (event) => event.preventDefault());
     heroVisual?.addEventListener("selectstart", (event) => event.preventDefault());

@@ -51,6 +51,7 @@ const related = relatedEntries(entry, projects).map((project) => ({
       <Content />
     </article>
     <ContentNavigation
+      tags={entry.data.tags}
       previous={previousEntry && { href: contentPath("projects", previousEntry.id), title: previousEntry.data.cardTitle ?? previousEntry.data.title }}
       next={nextEntry && { href: contentPath("projects", nextEntry.id), title: nextEntry.data.cardTitle ?? nextEntry.data.title }}
       related={related}

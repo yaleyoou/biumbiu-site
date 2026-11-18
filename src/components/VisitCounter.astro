@@ -2,9 +2,10 @@
 interface Props {
   scope?: "page" | "total";
   label?: string;
+  suffix?: string;
 }
 
-const { scope = "total", label = scope === "page" ? "阅读" : "访问" } = Astro.props;
+const { scope = "total", label = scope === "page" ? "阅读" : "访问", suffix = "次" } = Astro.props;
 ---
 
 <span
@@ -17,7 +18,7 @@ const { scope = "total", label = scope === "page" ? "阅读" : "访问" } = Astr
 >
   <span>{label}</span>
   <span data-visit-value>--</span>
-  <span>次</span>
+  {suffix && <span>{suffix}</span>}
 </span>
 
 <script>
